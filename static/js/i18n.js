@@ -1,247 +1,292 @@
 /**
- * i18n.js — Internationalisation for PSR FCF Viewer
- * Supported languages: pt (Portuguese), es (Spanish), en (English)
+ * i18n.js — PSR FCF Viewer · Internationalisation
+ * Languages: pt (Portuguese), es (Spanish), en (English)
  */
 
 const TRANSLATIONS = {
+
+  /* ── Portuguese ──────────────────────────────────────────────────────── */
   pt: {
-    // Header
-    'header.label':    'SDDP · Função de Custo Futuro',
-    'header.title':    'FCF Viewer',
-    'header.subtitle': '— Visualizador de Cortes FCF',
-    'header.desc':     'Visualize os cortes da Função de Custo Futuro gerados pelo SDDP. Suporte a <code>.csv</code>, <code>.xls</code> (TSV) e <code>.psr</code> (binário nativo). Todo o processamento acontece no browser via <strong>Pyodide</strong> — nenhum dado sai da sua máquina.',
+    /* Nav */
+    'nav.tag': 'SDDP',
+    'nav.file_none': '',
 
-    // Upload
-    'upload.icon':     '↑',
-    'upload.title':    'Arraste o arquivo aqui ou clique para selecionar',
-    'upload.hint':     'costmexx.csv · costmexx.xls · costmexx.psr · dados.json',
-    'upload.url_label':'ou URL / caminho local:',
-    'upload.url_ph':   'http://localhost:8080/data/costmexx.psr',
-    'upload.btn':      'Carregar',
+    /* Header */
+    'hdr.label':    'PSR · SDDP',
+    'hdr.title':    'FCF Viewer',
+    'hdr.subtitle': 'Função de Custo Futuro',
+    'hdr.desc':     'Visualize e analise os cortes de Benders que aproximam a Função de Custo Futuro (FCF) multi-dimensional de cada estágio do SDDP — base das simulações de despacho hidrotérmico.',
 
-    // Stats
-    'stat.stages':     'Estágios',
-    'stat.cuts':       'Cortes totais',
-    'stat.max_cut':    'Cortes máx. / estágio',
-    'stat.rhs_range':  'Range RHS',
-    'stat.hydros':     'Reservatórios',
-    'stat.filename':   'Arquivo',
+    /* Upload */
+    'up.drop':      'Arraste o arquivo aqui ou clique para selecionar',
+    'up.hint':      'costmexx.psr  ·  costmexx.xls  ·  costmexx.csv',
+    'up.url_lbl':   'ou endereço:',
+    'up.url_ph':    'http://localhost/data/costmexx.psr',
+    'up.btn':       'Carregar',
+    'up.samples':   'Casos de exemplo',
 
-    // Controls
-    'ctrl.hydro':      'Reservatório',
-    'ctrl.stage':      'Estágio (Envelope)',
-    'ctrl.vol_max':    'Vol. máx. (hm³)',
-    'ctrl.export':     'Exportar JSON',
+    /* Sample names */
+    's.exemplo': 'Exemplo Didático',
+    's.island':  'Sistema Ilha',
+    's.bolivia': 'Bolívia',
+    's.brasil':  'Brasil',
 
-    // Metadata panel
-    'meta.period':     'Período',
-    'meta.iter':       'Iteração',
-    'meta.zinf':       'Limite inf.',
-    'meta.zsup':       'Limite sup.',
-    'meta.itbst':      'Melhor iter.',
-    'meta.zsupbst':    'Melhor zsup',
+    /* Stats */
+    'st.stages':    'Estágios',
+    'st.cuts':      'Cortes totais',
+    'st.max_cut':   'Cortes / estágio',
+    'st.rhs_range': 'Intervalo RHS',
+    'st.reservoirs':'Reservatórios',
+    'st.file':      'Arquivo',
 
-    // Chart titles & descriptions
-    'c01.title': '01 · RHS por Estágio',
-    'c01.desc':  'Intercepto de cada corte ao longo dos estágios. Representa o custo futuro esperado em estado de referência (volume nulo).',
-    'c02.title': '02 · Valor da Água por Estágio',
-    'c02.desc':  'Coeficiente ∂FCF/∂V — sensibilidade do custo futuro ao volume armazenado no reservatório selecionado.',
-    'c03.title': '03 · Envelope da FCF',
-    'c03.desc':  'Forma da FCF para o estágio selecionado. Cada linha é um corte linear; o envelope (linha escura) é o supremo — a FCF real aproximada.',
-    'c04.title': '04 · Heatmap — RHS: Cortes × Estágios',
-    'c04.desc':  'Mapa de calor do valor RHS por combinação estágio × número de corte. Células brancas indicam cortes ausentes.',
-    'c05.title': '05 · 3D — Stage × Cut × RHS',
-    'c05.desc':  'Superfície 3D do intercepto da FCF. Arraste para rotacionar.',
-    'c06.title': '06 · 3D — Stage × Cut × Val. Água',
-    'c06.desc':  'Superfície 3D do valor da água do reservatório selecionado.',
-    'c07.title': '07 · Box Plot — RHS por Estágio',
-    'c07.desc':  'Distribuição estatística dos valores RHS em cada estágio: mediana, quartis e pontos individuais.',
-    'c08.title': '08 · Tabela de Dados',
-    'c08.desc':  'Todos os cortes da FCF em formato tabular — estágio, corte, iteração, RHS e valores da água.',
-
-    // Chart axis labels
-    'ax.stage':   'Estágio',
-    'ax.cut':     'Corte',
-    'ax.rhs':     'RHS',
-    'ax.vol':     'Volume',
-    'ax.fcf':     'FCF',
-    'ax.wv':      'Val. Água',
-    'ax.cut_num': 'Número do Corte',
-
-    // Table headers
-    'th.stage':   'Estágio',
-    'th.cut':     'Corte',
-    'th.iter':    'Iter.',
-    'th.cluster': 'Cluster',
-    'th.scenario':'Cenário',
-    'th.rhs':     'RHS',
-
-    // Footer
-    'footer.src': 'PSR FCF Viewer · SDDP · Pyodide + Plotly.js',
-    'footer.loaded': 'Carregado em',
-
-    // Loading
-    'loading.init': 'Inicializando Pyodide…',
-    'loading.module': 'Carregando módulo FCF Reader…',
-  },
-
-  es: {
-    'header.label':    'SDDP · Función de Costo Futuro',
-    'header.title':    'FCF Viewer',
-    'header.subtitle': '— Visualizador de Cortes FCF',
-    'header.desc':     'Visualice los cortes de la Función de Costo Futuro generados por SDDP. Compatible con <code>.csv</code>, <code>.xls</code> (TSV) y <code>.psr</code> (binario nativo). Todo el procesamiento ocurre en el navegador vía <strong>Pyodide</strong>.',
-
-    'upload.icon':     '↑',
-    'upload.title':    'Arrastre el archivo aquí o haga clic para seleccionar',
-    'upload.hint':     'costmexx.csv · costmexx.xls · costmexx.psr · datos.json',
-    'upload.url_label':'o URL / ruta local:',
-    'upload.url_ph':   'http://localhost:8080/data/costmexx.psr',
-    'upload.btn':      'Cargar',
-
-    'stat.stages':    'Etapas',
-    'stat.cuts':      'Cortes totales',
-    'stat.max_cut':   'Cortes máx. / etapa',
-    'stat.rhs_range': 'Rango RHS',
-    'stat.hydros':    'Embalses',
-    'stat.filename':  'Archivo',
-
-    'ctrl.hydro':     'Embalse',
-    'ctrl.stage':     'Etapa (Envolvente)',
+    /* Controls */
+    'ctrl.reservoir': 'Reservatório',
+    'ctrl.stage':     'Estágio',
     'ctrl.vol_max':   'Vol. máx. (hm³)',
     'ctrl.export':    'Exportar JSON',
 
-    'meta.period':    'Período',
-    'meta.iter':      'Iteración',
-    'meta.zinf':      'Cota inf.',
-    'meta.zsup':      'Cota sup.',
-    'meta.itbst':     'Mejor iter.',
-    'meta.zsupbst':   'Mejor zsup',
+    /* Metadata */
+    'meta.period':  'Período',
+    'meta.stages':  'Estágios',
+    'meta.iter':    'Iterações',
+    'meta.zinf':    'Z inferior',
+    'meta.zsup':    'Z superior',
+    'meta.gap':     'Gap',
 
-    'c01.title': '01 · RHS por Etapa',
-    'c01.desc':  'Intercepto de cada corte a lo largo de las etapas. Representa el costo futuro esperado con volumen nulo.',
-    'c02.title': '02 · Valor del Agua por Etapa',
-    'c02.desc':  'Coeficiente ∂FCF/∂V — sensibilidad del costo futuro al volumen almacenado en el embalse seleccionado.',
-    'c03.title': '03 · Envolvente de la FCF',
-    'c03.desc':  'Forma de la FCF para la etapa seleccionada. La envolvente (línea oscura) es el supremo de los cortes lineales.',
-    'c04.title': '04 · Heatmap — RHS: Cortes × Etapas',
-    'c04.desc':  'Mapa de calor del valor RHS por combinación etapa × número de corte.',
-    'c05.title': '05 · 3D — Etapa × Corte × RHS',
-    'c05.desc':  'Superficie 3D del intercepto de la FCF. Arrastre para rotar.',
-    'c06.title': '06 · 3D — Etapa × Corte × Val. Agua',
-    'c06.desc':  'Superficie 3D del valor del agua del embalse seleccionado.',
-    'c07.title': '07 · Box Plot — RHS por Etapa',
-    'c07.desc':  'Distribución estadística de los valores RHS en cada etapa.',
-    'c08.title': '08 · Tabla de Datos',
-    'c08.desc':  'Todos los cortes de la FCF en formato tabular.',
+    /* Tabs */
+    'tab.curves':   'Curvas FCF',
+    'tab.distrib':  'Distribuição',
+    'tab.surfaces': 'Superfícies 3D',
+    'tab.data':     'Dados',
 
-    'ax.stage':   'Etapa',
-    'ax.cut':     'Corte',
-    'ax.rhs':     'RHS',
-    'ax.vol':     'Volumen',
-    'ax.fcf':     'FCF',
-    'ax.wv':      'Val. Agua',
-    'ax.cut_num': 'Número de Corte',
+    /* Chart titles & descriptions */
+    'c.envelope.t': 'Função de Custo Futuro — Envelope',
+    'c.envelope.d': 'FCF(V) = max { c(k) + wv(k)·V } para o estágio selecionado. Cada linha tracejada é um corte linear (hiperplano de suporte); a curva sólida é o envelope convexo — a FCF aproximada.',
+    'c.rhs.t':      'Interceptos dos Cortes por Estágio',
+    'c.rhs.d':      'Valor do intercepto c(k) de cada corte em função do estágio. Representa o custo futuro esperado com armazenamento nulo.',
+    'c.wv.t':       'Valor da Água por Estágio',
+    'c.wv.d':       'Coeficiente wv(k) — variação do custo futuro por hm³ adicional armazenado. Reflete o benefício econômico de ter mais água disponível para geração futura.',
+    'c.box.t':      'Distribuição dos Interceptos por Estágio',
+    'c.box.d':      'Dispersão dos valores de intercepto c(k) em cada estágio — mediana, quartis e pontos individuais.',
+    'c.heatmap.t':  'Mapa de Calor — Interceptos (Cortes × Estágios)',
+    'c.heatmap.d':  'Visão global dos interceptos. Tons mais escuros indicam maior custo futuro esperado.',
+    'c.3drhs.t':    'Superfície 3D — Interceptos da FCF',
+    'c.3drhs.d':    'Superfície do intercepto c(k) ao longo dos estágios e cortes. Arraste para rotacionar.',
+    'c.3dwv.t':     'Superfície 3D — Valor da Água',
+    'c.3dwv.d':     'Superfície do coeficiente wv(k) para o reservatório selecionado.',
+    'c.table.t':    'Tabela de Cortes FCF',
+    'c.table.d':    'Todos os cortes com intercepto, valor da água e metadados de iteração.',
 
-    'th.stage':   'Etapa',
-    'th.cut':     'Corte',
-    'th.iter':    'Iter.',
-    'th.cluster': 'Cluster',
-    'th.scenario':'Escenario',
-    'th.rhs':     'RHS',
+    /* Axis labels */
+    'ax.stage':    'Estágio',
+    'ax.cut':      'Corte',
+    'ax.rhs':      'Intercepto c(k)',
+    'ax.vol':      'Volume',
+    'ax.fcf':      'FCF',
+    'ax.wv':       'Valor da Água',
+    'ax.cut_num':  'Número do Corte',
+    'ax.envelope': 'Envelope FCF',
 
-    'footer.src': 'PSR FCF Viewer · SDDP · Pyodide + Plotly.js',
-    'footer.loaded': 'Cargado en',
+    /* Table */
+    'th.stage':    'Estágio',
+    'th.cut':      'Corte',
+    'th.iter':     'Iter.',
+    'th.cluster':  'Cluster',
+    'th.scenario': 'Cenário',
+    'th.rhs':      'RHS',
 
-    'loading.init':   'Inicializando Pyodide…',
-    'loading.module': 'Cargando módulo FCF Reader…',
+    /* Footer & misc */
+    'footer.brand': 'PSR FCF Viewer',
+    'footer.loaded': 'Atualizado em',
+    'loading.boot':  'Carregando…',
   },
 
+  /* ── Spanish ─────────────────────────────────────────────────────────── */
+  es: {
+    'nav.tag': 'SDDP',
+    'nav.file_none': '',
+
+    'hdr.label':    'PSR · SDDP',
+    'hdr.title':    'FCF Viewer',
+    'hdr.subtitle': 'Función de Costo Futuro',
+    'hdr.desc':     'Visualice y analice los cortes de Benders que aproximan la Función de Costo Futuro (FCF) multi-dimensional de cada etapa del SDDP — base de las simulaciones de despacho hidrotérmico.',
+
+    'up.drop':    'Arrastre el archivo aquí o haga clic para seleccionar',
+    'up.hint':    'costmexx.psr  ·  costmexx.xls  ·  costmexx.csv',
+    'up.url_lbl': 'o dirección:',
+    'up.url_ph':  'http://localhost/data/costmexx.psr',
+    'up.btn':     'Cargar',
+    'up.samples': 'Casos de ejemplo',
+
+    's.exemplo': 'Ejemplo Didáctico',
+    's.island':  'Sistema Isla',
+    's.bolivia': 'Bolivia',
+    's.brasil':  'Brasil',
+
+    'st.stages':    'Etapas',
+    'st.cuts':      'Cortes totales',
+    'st.max_cut':   'Cortes / etapa',
+    'st.rhs_range': 'Rango RHS',
+    'st.reservoirs':'Embalses',
+    'st.file':      'Archivo',
+
+    'ctrl.reservoir': 'Embalse',
+    'ctrl.stage':     'Etapa',
+    'ctrl.vol_max':   'Vol. máx. (hm³)',
+    'ctrl.export':    'Exportar JSON',
+
+    'meta.period': 'Período',
+    'meta.stages': 'Etapas',
+    'meta.iter':   'Iteraciones',
+    'meta.zinf':   'Z inferior',
+    'meta.zsup':   'Z superior',
+    'meta.gap':    'Gap',
+
+    'tab.curves':   'Curvas FCF',
+    'tab.distrib':  'Distribución',
+    'tab.surfaces': 'Superficies 3D',
+    'tab.data':     'Datos',
+
+    'c.envelope.t': 'Función de Costo Futuro — Envolvente',
+    'c.envelope.d': 'FCF(V) = max { c(k) + wv(k)·V } para la etapa seleccionada. Cada línea es un corte lineal; la curva sólida es la envolvente convexa.',
+    'c.rhs.t':      'Interceptos de los Cortes por Etapa',
+    'c.rhs.d':      'Valor del intercepto c(k) de cada corte en función de la etapa.',
+    'c.wv.t':       'Valor del Agua por Etapa',
+    'c.wv.d':       'Coeficiente wv(k) — variación del costo futuro por hm³ adicional almacenado.',
+    'c.box.t':      'Distribución de Interceptos por Etapa',
+    'c.box.d':      'Dispersión de los valores de intercepto en cada etapa.',
+    'c.heatmap.t':  'Mapa de Calor — Interceptos (Cortes × Etapas)',
+    'c.heatmap.d':  'Vista global de los interceptos por etapa y corte.',
+    'c.3drhs.t':    'Superficie 3D — Interceptos de la FCF',
+    'c.3drhs.d':    'Superficie del intercepto c(k) a lo largo de etapas y cortes.',
+    'c.3dwv.t':     'Superficie 3D — Valor del Agua',
+    'c.3dwv.d':     'Superficie del coeficiente wv(k) para el embalse seleccionado.',
+    'c.table.t':    'Tabla de Cortes FCF',
+    'c.table.d':    'Todos los cortes con intercepto, valor del agua y metadatos.',
+
+    'ax.stage':    'Etapa',
+    'ax.cut':      'Corte',
+    'ax.rhs':      'Intercepto c(k)',
+    'ax.vol':      'Volumen',
+    'ax.fcf':      'FCF',
+    'ax.wv':       'Valor del Agua',
+    'ax.cut_num':  'Número de Corte',
+    'ax.envelope': 'Envolvente FCF',
+
+    'th.stage':    'Etapa',
+    'th.cut':      'Corte',
+    'th.iter':     'Iter.',
+    'th.cluster':  'Cluster',
+    'th.scenario': 'Escenario',
+    'th.rhs':      'RHS',
+
+    'footer.brand':  'PSR FCF Viewer',
+    'footer.loaded': 'Actualizado en',
+    'loading.boot':  'Cargando…',
+  },
+
+  /* ── English ─────────────────────────────────────────────────────────── */
   en: {
-    'header.label':    'SDDP · Future Cost Function',
-    'header.title':    'FCF Viewer',
-    'header.subtitle': '— FCF Cut Visualizer',
-    'header.desc':     'Visualize the Future Cost Function cuts generated by SDDP. Supports <code>.csv</code>, <code>.xls</code> (TSV) and <code>.psr</code> (native binary). All processing happens in the browser via <strong>Pyodide</strong> — no data leaves your machine.',
+    'nav.tag': 'SDDP',
+    'nav.file_none': '',
 
-    'upload.icon':     '↑',
-    'upload.title':    'Drag file here or click to select',
-    'upload.hint':     'costmexx.csv · costmexx.xls · costmexx.psr · data.json',
-    'upload.url_label':'or URL / local path:',
-    'upload.url_ph':   'http://localhost:8080/data/costmexx.psr',
-    'upload.btn':      'Load',
+    'hdr.label':    'PSR · SDDP',
+    'hdr.title':    'FCF Viewer',
+    'hdr.subtitle': 'Future Cost Function',
+    'hdr.desc':     'Visualize and analyze the Benders cuts approximating the multi-dimensional Future Cost Function (FCF) for each SDDP stage — the foundation of hydrothermal dispatch simulations.',
 
-    'stat.stages':    'Stages',
-    'stat.cuts':      'Total cuts',
-    'stat.max_cut':   'Max cuts / stage',
-    'stat.rhs_range': 'RHS range',
-    'stat.hydros':    'Reservoirs',
-    'stat.filename':  'File',
+    'up.drop':    'Drop file here or click to select',
+    'up.hint':    'costmexx.psr  ·  costmexx.xls  ·  costmexx.csv',
+    'up.url_lbl': 'or address:',
+    'up.url_ph':  'http://localhost/data/costmexx.psr',
+    'up.btn':     'Load',
+    'up.samples': 'Sample cases',
 
-    'ctrl.hydro':     'Reservoir',
-    'ctrl.stage':     'Stage (Envelope)',
+    's.exemplo': 'Basic Example',
+    's.island':  'Island System',
+    's.bolivia': 'Bolivia',
+    's.brasil':  'Brazil',
+
+    'st.stages':    'Stages',
+    'st.cuts':      'Total cuts',
+    'st.max_cut':   'Cuts / stage',
+    'st.rhs_range': 'RHS range',
+    'st.reservoirs':'Reservoirs',
+    'st.file':      'File',
+
+    'ctrl.reservoir': 'Reservoir',
+    'ctrl.stage':     'Stage',
     'ctrl.vol_max':   'Max vol. (hm³)',
     'ctrl.export':    'Export JSON',
 
-    'meta.period':    'Period',
-    'meta.iter':      'Iteration',
-    'meta.zinf':      'Lower bound',
-    'meta.zsup':      'Upper bound',
-    'meta.itbst':     'Best iter.',
-    'meta.zsupbst':   'Best zsup',
+    'meta.period': 'Period',
+    'meta.stages': 'Stages',
+    'meta.iter':   'Iterations',
+    'meta.zinf':   'Lower bound',
+    'meta.zsup':   'Upper bound',
+    'meta.gap':    'Gap',
 
-    'c01.title': '01 · RHS by Stage',
-    'c01.desc':  'Intercept of each cut along the stages. Represents the expected future cost at zero storage.',
-    'c02.title': '02 · Water Value by Stage',
-    'c02.desc':  'Coefficient ∂FCF/∂V — sensitivity of future cost to stored volume in the selected reservoir.',
-    'c03.title': '03 · FCF Envelope',
-    'c03.desc':  'Shape of the FCF for the selected stage. The envelope (dark line) is the supremum of the linear cuts — the approximated real FCF.',
-    'c04.title': '04 · Heatmap — RHS: Cuts × Stages',
-    'c04.desc':  'Heat map of RHS value by stage × cut number combination. White cells indicate missing cuts.',
-    'c05.title': '05 · 3D — Stage × Cut × RHS',
-    'c05.desc':  '3D surface of the FCF intercept. Drag to rotate.',
-    'c06.title': '06 · 3D — Stage × Cut × Water Value',
-    'c06.desc':  '3D surface of the water value for the selected reservoir.',
-    'c07.title': '07 · Box Plot — RHS by Stage',
-    'c07.desc':  'Statistical distribution of RHS values in each stage: median, quartiles, and individual points.',
-    'c08.title': '08 · Data Table',
-    'c08.desc':  'All FCF cuts in tabular format — stage, cut, iteration, RHS and water values.',
+    'tab.curves':   'FCF Curves',
+    'tab.distrib':  'Distribution',
+    'tab.surfaces': '3D Surfaces',
+    'tab.data':     'Data',
 
-    'ax.stage':   'Stage',
-    'ax.cut':     'Cut',
-    'ax.rhs':     'RHS',
-    'ax.vol':     'Volume',
-    'ax.fcf':     'FCF',
-    'ax.wv':      'Water Value',
-    'ax.cut_num': 'Cut Number',
+    'c.envelope.t': 'Future Cost Function — Envelope',
+    'c.envelope.d': 'FCF(V) = max { c(k) + wv(k)·V } for the selected stage. Each dashed line is a linear cut (supporting hyperplane); the solid curve is the convex envelope — the approximated FCF.',
+    'c.rhs.t':      'Cut Intercepts by Stage',
+    'c.rhs.d':      'Intercept value c(k) of each cut across stages. Represents the expected future cost at zero storage.',
+    'c.wv.t':       'Water Value by Stage',
+    'c.wv.d':       'Coefficient wv(k) — change in future cost per additional hm³ stored. Reflects the economic benefit of having more water available for future generation.',
+    'c.box.t':      'Intercept Distribution by Stage',
+    'c.box.d':      'Spread of intercept values c(k) in each stage — median, quartiles, and individual points.',
+    'c.heatmap.t':  'Heat Map — Intercepts (Cuts × Stages)',
+    'c.heatmap.d':  'Global view of intercepts across all stages and cuts.',
+    'c.3drhs.t':    '3D Surface — FCF Intercepts',
+    'c.3drhs.d':    'Surface of the intercept c(k) across stages and cuts. Drag to rotate.',
+    'c.3dwv.t':     '3D Surface — Water Value',
+    'c.3dwv.d':     'Surface of the water value coefficient wv(k) for the selected reservoir.',
+    'c.table.t':    'FCF Cuts Table',
+    'c.table.d':    'All cuts with intercept, water value, and iteration metadata.',
 
-    'th.stage':   'Stage',
-    'th.cut':     'Cut',
-    'th.iter':    'Iter.',
-    'th.cluster': 'Cluster',
-    'th.scenario':'Scenario',
-    'th.rhs':     'RHS',
+    'ax.stage':    'Stage',
+    'ax.cut':      'Cut',
+    'ax.rhs':      'Intercept c(k)',
+    'ax.vol':      'Volume',
+    'ax.fcf':      'FCF',
+    'ax.wv':       'Water Value',
+    'ax.cut_num':  'Cut Number',
+    'ax.envelope': 'FCF Envelope',
 
-    'footer.src': 'PSR FCF Viewer · SDDP · Pyodide + Plotly.js',
-    'footer.loaded': 'Loaded at',
+    'th.stage':    'Stage',
+    'th.cut':      'Cut',
+    'th.iter':     'Iter.',
+    'th.cluster':  'Cluster',
+    'th.scenario': 'Scenario',
+    'th.rhs':      'RHS',
 
-    'loading.init':   'Loading Pyodide…',
-    'loading.module': 'Loading FCF Reader module…',
+    'footer.brand':  'PSR FCF Viewer',
+    'footer.loaded': 'Updated at',
+    'loading.boot':  'Loading…',
   },
 };
 
-// ── Active language ──────────────────────────────────────────────────────
+/* ── Active language ─────────────────────────────────────────────────────── */
 let _lang = localStorage.getItem('fcf_lang') || 'pt';
 
 function currentLang() { return _lang; }
 
-/** Translate a key */
+/** Return translated string for key. Falls back to PT, then to key itself. */
 function t(key) {
-  return (TRANSLATIONS[_lang] && TRANSLATIONS[_lang][key]) ||
-         (TRANSLATIONS['pt'][key]) || key;
+  return (TRANSLATIONS[_lang]?.[key]) ??
+         (TRANSLATIONS['pt']?.[key]) ??
+         key;
 }
 
 /**
- * Apply translations to all [data-i18n] elements.
- * Elements with data-i18n-html get innerHTML set (allows tags).
+ * Apply translations to the DOM.
+ * - [data-i18n]       → textContent
+ * - [data-i18n-html]  → innerHTML  (allows <strong> etc.)
+ * - [data-i18n-ph]    → placeholder
  */
 function applyLang(lang) {
   if (!TRANSLATIONS[lang]) return;
@@ -249,30 +294,23 @@ function applyLang(lang) {
   localStorage.setItem('fcf_lang', lang);
 
   document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.dataset.i18n;
-    const val = t(key);
-    if (val !== undefined) el.textContent = val;
+    const v = t(el.dataset.i18n);
+    if (v !== undefined) el.textContent = v;
   });
 
   document.querySelectorAll('[data-i18n-html]').forEach(el => {
-    const key = el.dataset.i18nHtml;
-    const val = t(key);
-    if (val !== undefined) el.innerHTML = val;
+    const v = t(el.dataset.i18nHtml);
+    if (v !== undefined) el.innerHTML = v;
   });
 
   document.querySelectorAll('[data-i18n-ph]').forEach(el => {
-    const key = el.dataset.i18nPh;
-    const val = t(key);
-    if (val !== undefined) el.placeholder = val;
+    const v = t(el.dataset.i18nPh);
+    if (v !== undefined) el.placeholder = v;
   });
 
-  // Update active language button
   document.querySelectorAll('.lang-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.lang === lang);
   });
 }
 
-/** Init language on page load */
-function initLang() {
-  applyLang(_lang);
-}
+function initLang() { applyLang(_lang); }
