@@ -228,11 +228,13 @@ function setupNewFileBtn() {
 function showDashboard() {
   document.getElementById('view-landing')  .style.display = 'none';
   document.getElementById('view-dashboard').style.display = '';
+  document.getElementById('subnav')        .style.display = '';
   document.getElementById('btn-new-file')  .style.display = '';
 }
 
 function showLanding() {
   document.getElementById('view-dashboard').style.display = 'none';
+  document.getElementById('subnav')        .style.display = 'none';
   document.getElementById('view-landing')  .style.display = '';
   document.getElementById('btn-new-file')  .style.display = 'none';
   document.getElementById('nav-file')      .textContent   = '';

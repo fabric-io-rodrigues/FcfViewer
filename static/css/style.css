@@ -55,6 +55,25 @@ body {
 }
 
 /* ── Navbar ──────────────────────────────────────────────────────────────── */
+.subnav {
+  position: sticky;
+  top: 50px;        /* sits flush below the 50px navbar */
+  z-index: 190;
+  background: var(--surface);
+  border-bottom: 2px solid var(--border);
+  box-shadow: 0 2px 8px rgba(9,39,70,.06);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.subnav::-webkit-scrollbar { display: none; }
+
+.subnav-inner {
+  max-width: 1380px;
+  margin: 0 auto;
+  padding: 0 28px;
+  display: flex;
+}
+
 .navbar {
   position: sticky;
   top: 0;
@@ -240,6 +259,9 @@ body {
   margin: 0 auto;
   padding: 0 28px 64px;
 }
+
+/* Push dashboard content below the sticky subnav */
+#view-dashboard { padding-top: 24px; }
 
 /* ── Landing view ────────────────────────────────────────────────────────── */
 .view-landing {
@@ -537,22 +559,7 @@ body {
 .ctrl-spacer { flex: 1; }
 
 /* ── Tabs ────────────────────────────────────────────────────────────────── */
-.tabs-wrapper {
-  display: none;
-}
-
-.tabs-wrapper.visible { display: block; }
-
-.tabs-nav {
-  display: flex;
-  border-bottom: 2px solid var(--border);
-  margin-bottom: 22px;
-  gap: 0;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.tabs-nav::-webkit-scrollbar { display: none; }
+.tabs-wrapper { display: block; }
 
 .tab-btn {
   display: flex;
@@ -560,9 +567,9 @@ body {
   gap: 6px;
   background: none;
   border: none;
-  border-bottom: 2px solid transparent;
+  border-bottom: 3px solid transparent;
   margin-bottom: -2px;
-  padding: 10px 20px;
+  padding: 12px 22px;
   font-family: 'IBM Plex Sans', sans-serif;
   font-size: 13px;
   font-weight: 400;
@@ -739,5 +746,7 @@ footer {
   .landing-hero    { grid-template-columns: 1fr; }
   .page            { padding: 0 14px 48px; }
   .navbar          { padding: 0 14px; }
+  .subnav-inner    { padding: 0 14px; }
   .nav-tag         { display: none; }
+  .tab-btn         { padding: 10px 14px; font-size: 12px; }
 }
