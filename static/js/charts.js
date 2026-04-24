@@ -151,8 +151,36 @@ function renderEnvelope(divId, data, stage, hydroName, volMax) {
 
 /* ─────────────────────────────────────────────────────────────────────────
    02 · RHS (Intercepts) by Stage
+   Dense mode (max_cut > 40): single scatter coloured by cut number.
    ───────────────────────────────────────────────────────────────────────── */
 function renderRhsByStage(divId, data) {
+  const bl = _bl();
+  const layout = {
+    ...bl,
+    xaxis: { ...bl.xaxis, title: t('ax.stage'), dtick: _dtick(data.stages.length) },
+    yaxis: { ...bl.yaxis, title: `${t('ax.rhs')} (${data.rhs_unit})` },
+  };
+
+  if (data.max_cut > 40) {
+    const valid = data.cuts.filter(d => d.rhs != null);
+    Plotly.newPlot(divId, [{
+      type: 'scatter', mode: 'markers',
+      x: valid.map(d => d.stage),
+      y: valid.map(d => d.rhs),
+      marker: {
+        color: valid.map(d => d.cut),
+        colorscale: 'Viridis', size: 3, opacity: 0.7,
+        showscale: true,
+        colorbar: { title: { text: t('ax.cut'), font: { size: 10 } }, thickness: 12,
+                    tickfont: { size: 9 } },
+      },
+      hovertemplate:
+        `${t('ax.cut')} %{marker.color}<br>${t('ax.stage')} = %{x}<br>${t('ax.rhs')} = %{y:.2f} ${data.rhs_unit}<extra></extra>`,
+      showlegend: false,
+    }], { ...layout, margin: { ...bl.margin, r: 80 } }, CFG);
+    return;
+  }
+
   const traces = [];
   for (let c = 1; c <= data.max_cut; c++) {
     const pts = data.cuts.filter(d => d.cut === c).sort((a, b) => a.stage - b.stage);
@@ -168,19 +196,42 @@ function renderRhsByStage(divId, data) {
         `${t('ax.cut')} ${c}<br>${t('ax.stage')} = %{x}<br>${t('ax.rhs')} = %{y:.2f} ${data.rhs_unit}<extra></extra>`,
     });
   }
-  const bl = _bl();
-  Plotly.newPlot(divId, traces, {
-    ...bl,
-    xaxis: { ...bl.xaxis, title: t('ax.stage'), dtick: _dtick(data.stages.length) },
-    yaxis: { ...bl.yaxis, title: `${t('ax.rhs')} (${data.rhs_unit})` },
-  }, CFG);
+  Plotly.newPlot(divId, traces, layout, CFG);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
    03 · Water Value by Stage
+   Dense mode (max_cut > 40): single scatter coloured by cut number.
    ───────────────────────────────────────────────────────────────────────── */
 function renderWaterValue(divId, data, hydroName) {
   hydroName = hydroName || data.hydros[0];
+  const bl = _bl();
+  const layout = {
+    ...bl,
+    xaxis: { ...bl.xaxis, title: t('ax.stage'), dtick: _dtick(data.stages.length) },
+    yaxis: { ...bl.yaxis, title: `${t('ax.wv')} ${hydroName} (${data.vol_unit})` },
+  };
+
+  if (data.max_cut > 40) {
+    const valid = data.cuts.filter(d => d.hydros[hydroName] != null);
+    Plotly.newPlot(divId, [{
+      type: 'scatter', mode: 'markers',
+      x: valid.map(d => d.stage),
+      y: valid.map(d => d.hydros[hydroName]),
+      marker: {
+        color: valid.map(d => d.cut),
+        colorscale: 'Bluered', size: 3, opacity: 0.7,
+        showscale: true,
+        colorbar: { title: { text: t('ax.cut'), font: { size: 10 } }, thickness: 12,
+                    tickfont: { size: 9 } },
+      },
+      hovertemplate:
+        `${t('ax.cut')} %{marker.color}<br>${t('ax.stage')} = %{x}<br>${t('ax.wv')} = %{y:.5f}<extra></extra>`,
+      showlegend: false,
+    }], { ...layout, margin: { ...bl.margin, r: 80 } }, CFG);
+    return;
+  }
+
   const traces = [];
   for (let c = 1; c <= data.max_cut; c++) {
     const pts = data.cuts.filter(d => d.cut === c).sort((a, b) => a.stage - b.stage);
@@ -204,12 +255,7 @@ function renderWaterValue(divId, data, hydroName) {
         `${t('ax.cut')} ${c}<br>${t('ax.stage')} = %{x}<br>${t('ax.wv')} = %{y:.5f}<extra></extra>`,
     });
   }
-  const bl = _bl();
-  Plotly.newPlot(divId, traces, {
-    ...bl,
-    xaxis: { ...bl.xaxis, title: t('ax.stage'), dtick: _dtick(data.stages.length) },
-    yaxis: { ...bl.yaxis, title: `${t('ax.wv')} ${hydroName} (${data.vol_unit})` },
-  }, CFG);
+  Plotly.newPlot(divId, traces, layout, CFG);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -239,16 +285,13 @@ function renderBoxplot(divId, data) {
 
 /* ─────────────────────────────────────────────────────────────────────────
    05 · Heatmap — RHS (Cuts × Stages)
+   Uses O(1) Map lookup instead of Array.find() for performance.
    ───────────────────────────────────────────────────────────────────────── */
 function renderHeatmap(divId, data) {
   const stages = data.stages;
   const cuts   = Array.from({ length: data.max_cut }, (_, i) => i + 1);
-  const z = stages.map(s =>
-    cuts.map(c => {
-      const f = data.cuts.find(d => d.stage === s && d.cut === c);
-      return f ? f.rhs : null;
-    })
-  );
+  const lookup = new Map(data.cuts.map(c => [`${c.stage}_${c.cut}`, c.rhs]));
+  const z = stages.map(s => cuts.map(c => lookup.get(`${s}_${c}`) ?? null));
   const bl = _bl();
   Plotly.newPlot(divId, [{
     type: 'heatmap',
@@ -277,12 +320,13 @@ function renderHeatmap(divId, data) {
    06 · 3D Surface — RHS
    ───────────────────────────────────────────────────────────────────────── */
 function renderSurface3dRhs(divId, data) {
-  const { stages, cuts: cutZ } = _surface3dData(data, null, true);
+  const res = _surface3dData(data, null, true);
+  if (!res) { _3dTooLarge(divId, data); return; }
   Plotly.newPlot(divId, [{
     type: 'surface',
-    x: stages,
+    x: res.stages,
     y: Array.from({ length: data.max_cut }, (_, i) => i + 1),
-    z: cutZ,
+    z: res.cuts,
     colorscale: PSR_CS,
     opacity: 0.93,
     contours: { z: { show: true, usecolormap: true, project: { z: true } } },
@@ -297,12 +341,13 @@ function renderSurface3dRhs(divId, data) {
    ───────────────────────────────────────────────────────────────────────── */
 function renderSurface3dWaterValue(divId, data, hydroName) {
   hydroName = hydroName || data.hydros[0];
-  const { stages, cuts: cutZ } = _surface3dData(data, hydroName, false);
+  const res = _surface3dData(data, hydroName, false);
+  if (!res) { _3dTooLarge(divId, data); return; }
   Plotly.newPlot(divId, [{
     type: 'surface',
-    x: stages,
+    x: res.stages,
     y: Array.from({ length: data.max_cut }, (_, i) => i + 1),
-    z: cutZ,
+    z: res.cuts,
     colorscale: [
       [0, '#fff8ee'], [0.3, '#76B7B2'], [0.65, '#4E79A7'], [1, '#092746'],
     ],
@@ -330,7 +375,13 @@ function renderDataTable(divId, data) {
     ...(more > 0 ? [`+${more} ${t('ax.wv')}`] : []),
   ].map(h => `<th>${h}</th>`).join('');
 
-  const bodyRows = data.cuts.map(c => {
+  const ROW_CAP  = 5000;
+  const cutsShow = data.cuts.length > ROW_CAP ? data.cuts.slice(0, ROW_CAP) : data.cuts;
+  const capNote  = data.cuts.length > ROW_CAP
+    ? `<div class="table-cap-note">${t('lbl.table_cap') || `Exibindo ${ROW_CAP.toLocaleString()} de`} ${data.cuts.length.toLocaleString()} ${t('st.cuts') || 'cortes'}</div>`
+    : '';
+
+  const bodyRows = cutsShow.map(c => {
     const cells = [
       c.stage, c.cut, c.iter, c.cluster, c.scenario,
       c.rhs != null ? c.rhs.toFixed(4) : '—',
@@ -341,6 +392,7 @@ function renderDataTable(divId, data) {
   }).join('');
 
   document.getElementById(divId).innerHTML = `
+    ${capNote}
     <div class="table-inner">
       <table class="data-table">
         <thead><tr>${thCells}</tr></thead>
@@ -396,16 +448,18 @@ function renderAll(data) {
 /* ─────────────────────────────────────────────────────────────────────────
    Helpers
    ───────────────────────────────────────────────────────────────────────── */
+/* Returns null if the dataset is too large for 3D rendering (> 8000 cells). */
 function _surface3dData(data, hydroName, useRhs) {
+  const MAX_CELLS = 8000;
+  if (data.stages.length * data.max_cut > MAX_CELLS) return null;
+
   const stages = data.stages;
   const cuts   = Array.from({ length: data.max_cut }, (_, i) => i + 1);
-  const z = cuts.map(c =>
-    stages.map(s => {
-      const f = data.cuts.find(d => d.stage === s && d.cut === c);
-      if (!f) return null;
-      return useRhs ? f.rhs : (f.hydros[hydroName] ?? null);
-    })
-  );
+  const lookup = new Map(data.cuts.map(c => [
+    `${c.stage}_${c.cut}`,
+    useRhs ? c.rhs : (c.hydros[hydroName] ?? null),
+  ]));
+  const z = cuts.map(c => stages.map(s => lookup.get(`${s}_${c}`) ?? null));
   return { stages, cuts: z };
 }
 
@@ -426,6 +480,13 @@ function _scene3d(unit, zTitle) {
       camera: { eye: { x: 1.5, y: -1.5, z: 0.9 } },
     },
   };
+}
+
+function _3dTooLarge(divId, data) {
+  const el = document.getElementById(divId);
+  if (!el) return;
+  const cells = data.stages.length * data.max_cut;
+  el.innerHTML = `<div class="chart-msg">${t('lbl.3d_large') || '3D indisponível para este dataset'} (${data.stages.length} est. × ${data.max_cut} cortes = ${cells.toLocaleString()} pontos)</div>`;
 }
 
 function _dtick(nStages) {
