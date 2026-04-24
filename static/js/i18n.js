@@ -80,6 +80,7 @@ const TRANSLATIONS = {
     /* Axis labels */
     'ax.stage':    'Estágio',
     'ax.cut':      'Corte',
+    'ax.iter':     'iter.',
     'ax.rhs':      'Intercepto c(k)',
     'ax.vol':      'Volume',
     'ax.fcf':      'FCF',
@@ -166,6 +167,7 @@ const TRANSLATIONS = {
 
     'ax.stage':    'Etapa',
     'ax.cut':      'Corte',
+    'ax.iter':     'iter.',
     'ax.rhs':      'Intercepto c(k)',
     'ax.vol':      'Volumen',
     'ax.fcf':      'FCF',
@@ -250,6 +252,7 @@ const TRANSLATIONS = {
 
     'ax.stage':    'Stage',
     'ax.cut':      'Cut',
+    'ax.iter':     'iter.',
     'ax.rhs':      'Intercept c(k)',
     'ax.vol':      'Volume',
     'ax.fcf':      'FCF',
