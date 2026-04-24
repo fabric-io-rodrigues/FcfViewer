@@ -217,13 +217,25 @@ function updateMetaPanel(data) {
   }
 }
 
-/* ── Section visibility ──────────────────────────────────────────────────── */
+/* ── New-file button (returns to landing) ────────────────────────────────── */
+
+function setupNewFileBtn() {
+  document.getElementById('btn-new-file')?.addEventListener('click', showLanding);
+}
+
+/* ── View switching ──────────────────────────────────────────────────────── */
 
 function showDashboard() {
-  document.getElementById('stats-section')  .style.display = '';
-  document.getElementById('meta-panel')     .classList.add('visible');
-  document.querySelector('.controls-bar')   .classList.add('visible');
-  document.querySelector('.tabs-wrapper')   .classList.add('visible');
+  document.getElementById('view-landing')  .style.display = 'none';
+  document.getElementById('view-dashboard').style.display = '';
+  document.getElementById('btn-new-file')  .style.display = '';
+}
+
+function showLanding() {
+  document.getElementById('view-dashboard').style.display = 'none';
+  document.getElementById('view-landing')  .style.display = '';
+  document.getElementById('btn-new-file')  .style.display = 'none';
+  document.getElementById('nav-file')      .textContent   = '';
 }
 
 /* ── Loading / error ─────────────────────────────────────────────────────── */

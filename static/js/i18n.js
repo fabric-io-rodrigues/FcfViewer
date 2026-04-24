@@ -8,8 +8,9 @@ const TRANSLATIONS = {
   /* ── Portuguese ──────────────────────────────────────────────────────── */
   pt: {
     /* Nav */
-    'nav.tag': 'SDDP',
-    'nav.file_none': '',
+    'nav.tag':      'SDDP',
+    'nav.file_none':'',
+    'nav.new_file': 'Carregar arquivo',
 
     /* Header */
     'hdr.label':    'PSR · SDDP',
@@ -99,6 +100,9 @@ const TRANSLATIONS = {
     'th.scenario': 'Cenário',
     'th.rhs':      'RHS',
 
+    'lbl.3d_large':  '3D indisponível — dataset muito grande',
+    'lbl.table_cap': 'Exibindo 5.000 de',
+
     /* Footer & misc */
     'footer.brand': 'PSR FCF Viewer',
     'footer.loaded': 'Atualizado em',
@@ -107,8 +111,9 @@ const TRANSLATIONS = {
 
   /* ── Spanish ─────────────────────────────────────────────────────────── */
   es: {
-    'nav.tag': 'SDDP',
-    'nav.file_none': '',
+    'nav.tag':      'SDDP',
+    'nav.file_none':'',
+    'nav.new_file': 'Cargar archivo',
 
     'hdr.label':    'PSR · SDDP',
     'hdr.title':    'FCF Viewer',
@@ -188,6 +193,9 @@ const TRANSLATIONS = {
     'th.scenario': 'Escenario',
     'th.rhs':      'RHS',
 
+    'lbl.3d_large':  '3D no disponible — dataset demasiado grande',
+    'lbl.table_cap': 'Mostrando 5.000 de',
+
     'footer.brand':  'PSR FCF Viewer',
     'footer.loaded': 'Actualizado en',
     'loading.boot':  'Cargando…',
@@ -195,8 +203,9 @@ const TRANSLATIONS = {
 
   /* ── English ─────────────────────────────────────────────────────────── */
   en: {
-    'nav.tag': 'SDDP',
-    'nav.file_none': '',
+    'nav.tag':      'SDDP',
+    'nav.file_none':'',
+    'nav.new_file': 'Open file',
 
     'hdr.label':    'PSR · SDDP',
     'hdr.title':    'FCF Viewer',
@@ -275,6 +284,9 @@ const TRANSLATIONS = {
     'th.cluster':  'Cluster',
     'th.scenario': 'Scenario',
     'th.rhs':      'RHS',
+
+    'lbl.3d_large':  '3D unavailable — dataset too large',
+    'lbl.table_cap': 'Showing 5,000 of',
 
     'footer.brand':  'PSR FCF Viewer',
     'footer.loaded': 'Updated at',

@@ -130,6 +130,26 @@ body {
   white-space: nowrap;
 }
 
+/* New-file button (navbar) */
+.btn-new-file {
+  background: none;
+  border: 1px solid rgba(171,150,113,.4);
+  border-radius: 4px;
+  padding: 4px 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .05em;
+  color: var(--nav-text);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .15s, border-color .15s;
+}
+.btn-new-file:hover {
+  background: rgba(171,150,113,.18);
+  border-color: var(--nav-border);
+}
+
 /* Language switcher */
 .lang-switcher {
   display: flex;
@@ -221,13 +241,17 @@ body {
   padding: 0 28px 64px;
 }
 
-/* ── Upload section ──────────────────────────────────────────────────────── */
-.upload-section {
-  padding: 32px 0 24px;
+/* ── Landing view ────────────────────────────────────────────────────────── */
+.view-landing {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: calc(100vh - 50px);
+  padding: 48px 0;
   animation: fadeUp .5s ease both;
 }
 
-.upload-hero {
+.landing-hero {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 16px;
@@ -656,6 +680,30 @@ body {
 .table-outer::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 .table-outer::-webkit-scrollbar-thumb:hover { background: var(--primary); }
 
+/* ── Chart notice messages ───────────────────────────────────────────────── */
+.chart-msg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 200px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  padding: 24px;
+}
+
+.table-cap-note {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  background: var(--gold-100);
+  border-bottom: 1px solid var(--gold-200);
+  padding: 6px 14px;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
 /* ── Footer ──────────────────────────────────────────────────────────────── */
 footer {
   margin-top: 48px;
@@ -688,7 +736,7 @@ footer {
 @media (max-width: 880px) {
   .charts-grid     { grid-template-columns: 1fr; }
   .chart-card.wide { grid-column: 1; }
-  .upload-hero     { grid-template-columns: 1fr; }
+  .landing-hero    { grid-template-columns: 1fr; }
   .page            { padding: 0 14px 48px; }
   .navbar          { padding: 0 14px; }
   .nav-tag         { display: none; }
