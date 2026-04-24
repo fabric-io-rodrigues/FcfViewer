@@ -350,6 +350,30 @@ function renderDataTable(divId, data) {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
+   09 · Cuts per iteration — bar chart
+   ───────────────────────────────────────────────────────────────────────── */
+function renderCutsPerIter(divId, data) {
+  const iterMap = {};
+  data.cuts.forEach(c => { iterMap[c.iter] = (iterMap[c.iter] || 0) + 1; });
+  const iters = Object.keys(iterMap).map(Number).sort((a, b) => a - b);
+
+  const bl = _bl();
+  Plotly.newPlot(divId, [{
+    type: 'bar',
+    x: iters,
+    y: iters.map(i => iterMap[i]),
+    marker: { color: iters.map((_, k) => PALETTE[k % PALETTE.length]) },
+    hovertemplate:
+      `${t('ax.iter')} %{x}<br>${t('lbl.cuts_count')} = %{y}<extra></extra>`,
+  }], {
+    ...bl,
+    xaxis: { ...bl.xaxis, title: t('ax.iter'), dtick: 1, type: 'category' },
+    yaxis: { ...bl.yaxis, title: t('lbl.cuts_count') },
+    showlegend: false,
+  }, CFG);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
    Render all (called on load and on language change)
    ───────────────────────────────────────────────────────────────────────── */
 function renderAll(data) {
@@ -358,14 +382,15 @@ function renderAll(data) {
   const s = data._stage  || data.stages[0];
   const v = data._volMax || 1000;
 
-  renderEnvelope(         'chart-envelope', data, s, h, v);
-  renderRhsByStage(        'chart-rhs',     data);
-  renderWaterValue(        'chart-wv',      data, h);
-  renderBoxplot(           'chart-box',     data);
-  renderHeatmap(           'chart-heatmap', data);
-  renderSurface3dRhs(      'chart-3d-rhs',  data);
-  renderSurface3dWaterValue('chart-3d-wv',  data, h);
-  renderDataTable(         'chart-table',   data);
+  renderEnvelope(         'chart-envelope',   data, s, h, v);
+  renderRhsByStage(        'chart-rhs',        data);
+  renderWaterValue(        'chart-wv',         data, h);
+  renderBoxplot(           'chart-box',        data);
+  renderHeatmap(           'chart-heatmap',    data);
+  renderCutsPerIter(       'chart-cuts-iter',  data);
+  renderSurface3dRhs(      'chart-3d-rhs',     data);
+  renderSurface3dWaterValue('chart-3d-wv',     data, h);
+  renderDataTable(         'chart-table',      data);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
