@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SDDP — Função de Custo Futuro</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.0/plotly.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0f14;
+    --surface: #121820;
+    --border: #1e2a38;
+    --accent: #00d4aa;
+    --accent2: #f97316;
+    --accent3: #6366f1;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --grid: rgba(0,212,170,0.06);
+  }
+
+- { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+background: var(–bg);
+color: var(–text);
+font-family: ‘IBM Plex Sans’, sans-serif;
+font-weight: 300;
+min-height: 100vh;
+overflow-x: hidden;
+}
+
+/* Subtle grid background */
+body::before {
+content: ‘’;
+position: fixed;
+inset: 0;
+background-image:
+linear-gradient(var(–grid) 1px, transparent 1px),
+linear-gradient(90deg, var(–grid) 1px, transparent 1px);
+background-size: 48px 48px;
+pointer-events: none;
+z-index: 0;
+}
+
+.container {
+position: relative;
+z-index: 1;
+max-width: 1280px;
+margin: 0 auto;
+padding: 48px 32px;
+}
+
+header {
+margin-bottom: 56px;
+border-left: 3px solid var(–accent);
+padding-left: 20px;
+animation: fadeUp 0.6s ease both;
+}
+
+header .label {
+font-family: ‘IBM Plex Mono’, monospace;
+font-size: 11px;
+letter-spacing: 0.2em;
+text-transform: uppercase;
+color: var(–accent);
+margin-bottom: 8px;
+}
+
+header h1 {
+font-size: clamp(22px, 3vw, 32px);
+font-weight: 600;
+color: var(–text);
+line-height: 1.2;
+}
+
+header p {
+margin-top: 10px;
+font-size: 14px;
+color: var(–muted);
+max-width: 600px;
+line-height: 1.6;
+}
+
+.stats-row {
+display: flex;
+gap: 16px;
+margin-bottom: 48px;
+flex-wrap: wrap;
+animation: fadeUp 0.6s 0.1s ease both;
+}
+
+.stat {
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: 4px;
+padding: 16px 24px;
+flex: 1;
+min-width: 140px;
+}
+
+.stat .val {
+font-family: ‘IBM Plex Mono’, monospace;
+font-size: 22px;
+font-weight: 600;
+color: var(–accent);
+}
+
+.stat .key {
+font-size: 11px;
+letter-spacing: 0.1em;
+text-transform: uppercase;
+color: var(–muted);
+margin-top: 4px;
+}
+
+.charts-grid {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 24px;
+}
+
+.chart-card {
+background: var(–surface);
+border: 1px solid var(–border);
+border-radius: 6px;
+padding: 24px;
+animation: fadeUp 0.6s ease both;
+}
+
+.chart-card.wide {
+grid-column: 1 / -1;
+}
+
+.chart-card h2 {
+font-family: ‘IBM Plex Mono’, monospace;
+font-size: 12px;
+letter-spacing: 0.15em;
+text-transform: uppercase;
+color: var(–accent);
+margin-bottom: 4px;
+}
+
+.chart-card p.desc {
+font-size: 12px;
+color: var(–muted);
+margin-bottom: 20px;
+line-height: 1.5;
+}
+
+.plot-area {
+width: 100%;
+height: 380px;
+}
+
+.plot-area-3d {
+width: 100%;
+height: 460px;
+}
+
+@keyframes fadeUp {
+from { opacity: 0; transform: translateY(18px); }
+to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Stagger chart cards */
+.chart-card:nth-child(1) { animation-delay: 0.15s; }
+.chart-card:nth-child(2) { animation-delay: 0.25s; }
+.chart-card:nth-child(3) { animation-delay: 0.35s; }
+.chart-card:nth-child(4) { animation-delay: 0.45s; }
+.chart-card:nth-child(5) { animation-delay: 0.55s; }
+
+footer {
+margin-top: 56px;
+padding-top: 24px;
+border-top: 1px solid var(–border);
+font-family: ‘IBM Plex Mono’, monospace;
+font-size: 11px;
+color: var(–muted);
+display: flex;
+justify-content: space-between;
+flex-wrap: wrap;
+gap: 8px;
+}
+
+@media (max-width: 768px) {
+.charts-grid { grid-template-columns: 1fr; }
+.chart-card.wide { grid-column: 1; }
+.stats-row { gap: 10px; }
+}
+</style>
+
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="label">SDDP · Função de Custo Futuro</div>
+    <h1>Análise de Cortes da FCF<br>Reservatório H1</h1>
+    <p>Visualização dos cortes da Função de Custo Futuro (FCF) extraídos do arquivo <code>costme.xls</code>. Cada corte representa um hiperplano de suporte da FCF multi-dimensional.</p>
+  </header>
+
+  <div class="stats-row">
+    <div class="stat"><div class="val">11</div><div class="key">Estágios</div></div>
+    <div class="stat"><div class="val">31</div><div class="key">Cortes totais</div></div>
+    <div class="stat"><div class="val">4</div><div class="key">Iterações máx.</div></div>
+    <div class="stat"><div class="val">26,554 – 33,911</div><div class="key">RHS range (k$) · Stage 1</div></div>
+    <div class="stat"><div class="val">k$/hm³</div><div class="key">Unidade Vol. Hidro</div></div>
+  </div>
+
+  <div class="charts-grid">
+
+```
+<!-- Chart 1: RHS por Stage -->
+<div class="chart-card">
+  <h2>01 · RHS por Estágio</h2>
+  <p class="desc">Evolução temporal do valor do lado direito (intercepto) de cada corte da FCF. Representa o custo futuro esperado em k$.</p>
+  <div id="chart1" class="plot-area"></div>
+</div>
+
+<!-- Chart 2: Valor da água H1 por Stage -->
+<div class="chart-card">
+  <h2>02 · Valor da Água H1 por Estágio</h2>
+  <p class="desc">Coeficiente do volume armazenado no reservatório H1 em cada corte. Indica a sensibilidade do custo futuro ao volume armazenado (k$/hm³).</p>
+  <div id="chart2" class="plot-area"></div>
+</div>
+
+<!-- Chart 3: Heatmap -->
+<div class="chart-card wide">
+  <h2>03 · Heatmap — RHS: Cortes × Estágios</h2>
+  <p class="desc">Mapa de calor do valor RHS por combinação de estágio e número do corte. Cortes ausentes em determinados estágios aparecem em cinza.</p>
+  <div id="chart3" class="plot-area"></div>
+</div>
+
+<!-- Chart 4: 3D RHS -->
+<div class="chart-card">
+  <h2>04 · 3D — Stage × Num. Cut × RHS</h2>
+  <p class="desc">Superfície 3D mostrando como o intercepto (RHS) da FCF varia entre estágios e cortes.</p>
+  <div id="chart4" class="plot-area-3d"></div>
+</div>
+
+<!-- Chart 5: 3D Vol Hydro -->
+<div class="chart-card">
+  <h2>05 · 3D — Stage × Num. Cut × Vol. Hidro H1</h2>
+  <p class="desc">Superfície 3D do valor da água (coeficiente de H1) ao longo dos estágios e cortes da FCF.</p>
+  <div id="chart5" class="plot-area-3d"></div>
+</div>
+```
+
+  </div>
+
+  <footer>
+    <span>Fonte: costme.xls · PFCF 1 · SDDP</span>
+    <span>Gerado em: <span id="ts"></span></span>
+  </footer>
+</div>
+
+<script>
+// ── Raw data from costme.xls ──────────────────────────────────────────────
+const raw = [
+  {stage:1, cut:1, iter:4, rhs:33909, wv:-0.66667},
+  {stage:1, cut:2, iter:3, rhs:33911, wv:-0.80000},
+  {stage:1, cut:3, iter:2, rhs:33903, wv:-0.66667},
+  {stage:1, cut:4, iter:1, rhs:26554, wv:-0.80000},
+  {stage:2, cut:1, iter:3, rhs:29512, wv:-0.80000},
+  {stage:2, cut:2, iter:2, rhs:29506, wv:-0.80000},
+  {stage:2, cut:3, iter:1, rhs:22155, wv:-0.80000},
+  {stage:3, cut:1, iter:3, rhs:25196, wv:-0.80000},
+  {stage:3, cut:2, iter:2, rhs:25189, wv:-0.80000},
+  {stage:3, cut:3, iter:1, rhs:17849, wv:-1.0111},
+  {stage:4, cut:1, iter:3, rhs:21643, wv:-0.80000},
+  {stage:4, cut:2, iter:2, rhs:21636, wv:-0.80000},
+  {stage:4, cut:3, iter:1, rhs:17026, wv:-55.556},
+  {stage:5, cut:1, iter:3, rhs:17980, wv:-0.80000},
+  {stage:5, cut:2, iter:2, rhs:17974, wv:-0.80000},
+  {stage:5, cut:3, iter:1, rhs:15690, wv:-55.556},
+  {stage:6, cut:1, iter:3, rhs:15115, wv:-1.0111},
+  {stage:6, cut:2, iter:2, rhs:15098, wv:-0.80000},
+  {stage:6, cut:3, iter:1, rhs:14428, wv:-55.556},
+  {stage:7, cut:1, iter:3, rhs:12732, wv:-1.0111},
+  {stage:7, cut:2, iter:2, rhs:12716, wv:-0.80000},
+  {stage:7, cut:3, iter:1, rhs:13236, wv:-55.556},
+  {stage:8, cut:1, iter:3, rhs:10518, wv:-1.0111},
+  {stage:8, cut:2, iter:2, rhs:10511, wv:-0.80000},
+  {stage:8, cut:3, iter:1, rhs:10556, wv:-55.556},
+  {stage:9, cut:1, iter:2, rhs:8512,  wv:-0.80000},
+  {stage:9, cut:2, iter:1, rhs:8512,  wv:-0.80000},
+  {stage:10,cut:1, iter:2, rhs:6168.7,wv:-0.80000},
+  {stage:10,cut:2, iter:1, rhs:6168.7,wv:-0.80000},
+  {stage:11,cut:1, iter:2, rhs:3315.2,wv:-0.66667},
+  {stage:11,cut:2, iter:1, rhs:3316.2,wv:-0.80000},
+];
+
+const stages = [...new Set(raw.map(d => d.stage))].sort((a,b)=>a-b);
+const maxCut = Math.max(...raw.map(d => d.cut));
+
+// Plotly base layout helpers
+const baseLayout = {
+  paper_bgcolor: 'transparent',
+  plot_bgcolor: 'transparent',
+  font: { family: "'IBM Plex Mono', monospace", color: '#94a3b8', size: 11 },
+  margin: { t: 10, b: 50, l: 60, r: 20 },
+  xaxis: {
+    gridcolor: '#1e2a38', zerolinecolor: '#1e2a38',
+    tickfont: { size: 10 }
+  },
+  yaxis: {
+    gridcolor: '#1e2a38', zerolinecolor: '#1e2a38',
+    tickfont: { size: 10 }
+  },
+  legend: { bgcolor: 'transparent', font: { size: 10 } }
+};
+
+const config = { responsive: true, displayModeBar: false };
+
+// Accent palette per cut
+const palette = ['#00d4aa', '#f97316', '#6366f1', '#ec4899'];
+
+// ── Chart 1: RHS por Stage (line per cut) ────────────────────────────────
+(function() {
+  const traces = [];
+  for (let c = 1; c <= maxCut; c++) {
+    const pts = raw.filter(d => d.cut === c).sort((a,b) => a.stage - b.stage);
+    traces.push({
+      x: pts.map(d => d.stage),
+      y: pts.map(d => d.rhs),
+      name: `Corte ${c}`,
+      mode: 'lines+markers',
+      line: { color: palette[(c-1) % palette.length], width: 2 },
+      marker: { size: 6, color: palette[(c-1) % palette.length] }
+    });
+  }
+  Plotly.newPlot('chart1', traces, {
+    ...baseLayout,
+    xaxis: { ...baseLayout.xaxis, title: 'Estágio', dtick: 1 },
+    yaxis: { ...baseLayout.yaxis, title: 'RHS (k$)' }
+  }, config);
+})();
+
+// ── Chart 2: Vol. Hydro H1 por Stage ─────────────────────────────────────
+(function() {
+  const traces = [];
+  for (let c = 1; c <= maxCut; c++) {
+    const pts = raw.filter(d => d.cut === c).sort((a,b) => a.stage - b.stage);
+    traces.push({
+      x: pts.map(d => d.stage),
+      y: pts.map(d => d.wv),
+      name: `Corte ${c}`,
+      mode: 'lines+markers',
+      line: { color: palette[(c-1) % palette.length], width: 2, dash: c > 2 ? 'dot' : 'solid' },
+      marker: { size: 6, symbol: c > 2 ? 'diamond' : 'circle', color: palette[(c-1) % palette.length] }
+    });
+  }
+  Plotly.newPlot('chart2', traces, {
+    ...baseLayout,
+    xaxis: { ...baseLayout.xaxis, title: 'Estágio', dtick: 1 },
+    yaxis: { ...baseLayout.yaxis, title: 'Valor da Água H1 (k$/hm³)' }
+  }, config);
+})();
+
+// ── Chart 3: Heatmap RHS ──────────────────────────────────────────────────
+(function() {
+  const cuts = Array.from({length: maxCut}, (_, i) => i + 1);
+  const z = stages.map(s =>
+    cuts.map(c => {
+      const found = raw.find(d => d.stage === s && d.cut === c);
+      return found ? found.rhs : null;
+    })
+  );
+
+  const trace = {
+    type: 'heatmap',
+    z,
+    x: cuts.map(c => `Corte ${c}`),
+    y: stages.map(s => `Stage ${s}`),
+    colorscale: [
+      [0,   '#0f2027'],
+      [0.3, '#1e4d6b'],
+      [0.6, '#00d4aa'],
+      [1,   '#f97316']
+    ],
+    colorbar: {
+      tickfont: { size: 9, color: '#64748b' },
+      title: { text: 'k$', font: { size: 10, color: '#64748b' } }
+    },
+    zsmooth: false
+  };
+
+  Plotly.newPlot('chart3', [trace], {
+    ...baseLayout,
+    margin: { t: 10, b: 60, l: 80, r: 80 },
+    xaxis: { ...baseLayout.xaxis, title: 'Número do Corte' },
+    yaxis: { ...baseLayout.yaxis, title: 'Estágio', autorange: 'reversed' }
+  }, config);
+})();
+
+// ── Chart 4: 3D Surface — Stage × Cut × RHS ──────────────────────────────
+(function() {
+  const cuts = Array.from({length: maxCut}, (_, i) => i + 1);
+  const z = cuts.map(c =>
+    stages.map(s => {
+      const found = raw.find(d => d.stage === s && d.cut === c);
+      return found ? found.rhs : null;
+    })
+  );
+
+  const trace = {
+    type: 'surface',
+    x: stages,
+    y: cuts,
+    z,
+    colorscale: [
+      [0, '#0f2027'], [0.4, '#1e4d6b'], [0.7, '#00d4aa'], [1, '#f97316']
+    ],
+    opacity: 0.9,
+    contours: {
+      z: { show: true, usecolormap: true, highlightcolor: '#fff', project: { z: true } }
+    },
+    colorbar: { tickfont: { size: 9, color: '#64748b' } }
+  };
+
+  Plotly.newPlot('chart4', [trace], {
+    paper_bgcolor: 'transparent',
+    font: { family: "'IBM Plex Mono', monospace", color: '#94a3b8', size: 10 },
+    margin: { t: 10, b: 10, l: 10, r: 10 },
+    scene: {
+      bgcolor: '#0b0f14',
+      xaxis: { title: 'Estágio', gridcolor: '#1e2a38', zerolinecolor: '#1e2a38' },
+      yaxis: { title: 'Corte',   gridcolor: '#1e2a38', zerolinecolor: '#1e2a38' },
+      zaxis: { title: 'RHS (k$)',gridcolor: '#1e2a38', zerolinecolor: '#1e2a38' },
+      camera: { eye: { x: 1.6, y: -1.6, z: 1.0 } }
+    }
+  }, config);
+})();
+
+// ── Chart 5: 3D Surface — Stage × Cut × Vol. Hydro ───────────────────────
+(function() {
+  const cuts = Array.from({length: maxCut}, (_, i) => i + 1);
+  const z = cuts.map(c =>
+    stages.map(s => {
+      const found = raw.find(d => d.stage === s && d.cut === c);
+      return found ? found.wv : null;
+    })
+  );
+
+  const trace = {
+    type: 'surface',
+    x: stages,
+    y: cuts,
+    z,
+    colorscale: [
+      [0, '#1a0533'], [0.3, '#6366f1'], [0.7, '#ec4899'], [1, '#f97316']
+    ],
+    opacity: 0.9,
+    contours: {
+      z: { show: true, usecolormap: true, highlightcolor: '#fff', project: { z: true } }
+    },
+    colorbar: { tickfont: { size: 9, color: '#64748b' } }
+  };
+
+  Plotly.newPlot('chart5', [trace], {
+    paper_bgcolor: 'transparent',
+    font: { family: "'IBM Plex Mono', monospace", color: '#94a3b8', size: 10 },
+    margin: { t: 10, b: 10, l: 10, r: 10 },
+    scene: {
+      bgcolor: '#0b0f14',
+      xaxis: { title: 'Estágio', gridcolor: '#1e2a38', zerolinecolor: '#1e2a38' },
+      yaxis: { title: 'Corte',   gridcolor: '#1e2a38', zerolinecolor: '#1e2a38' },
+      zaxis: { title: 'Vol. H1 (k$/hm³)', gridcolor: '#1e2a38', zerolinecolor: '#1e2a38' },
+      camera: { eye: { x: 1.6, y: -1.6, z: 1.0 } }
+    }
+  }, config);
+})();
+
+// Timestamp
+document.getElementById('ts').textContent = new Date().toLocaleString('pt-BR');
+</script>
+
+</body>
+</html>
