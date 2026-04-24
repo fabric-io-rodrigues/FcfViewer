@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FCF Viewer — Função de Custo Futuro</title>
+
+  <!-- Plotly -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.0/plotly.min.js"></script>
+  <!-- Pyodide (Python in the browser via WebAssembly) -->
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+  <!-- Styles -->
+  <link rel="stylesheet" href="static/css/style.css">
+</head>
+<body>
+
+<!-- ── Loading overlay ─────────────────────────────────────────────────── -->
+<div id="loading" class="loading-overlay">
+  <div class="loading-box">
+    <div class="loading-spinner"></div>
+    <div id="loading-msg">Inicializando Pyodide…</div>
+  </div>
+</div>
+
+<!-- ── Error banner ────────────────────────────────────────────────────── -->
+<div id="error-banner" class="error-banner" style="display:none"></div>
+
+<!-- ── Main content ────────────────────────────────────────────────────── -->
+<div class="container">
+
+  <header>
+    <div class="label">SDDP · Função de Custo Futuro</div>
+    <h1>FCF Viewer <span class="subtitle">— Visualizador de Cortes FCF</span></h1>
+    <p>
+      Visualize os cortes da Função de Custo Futuro gerados pelo SDDP.
+      Suporta <code>.csv</code>, <code>.xls</code> (exportação TSV) e
+      <code>.psr</code> (binário nativo — <em>costmexx.psr</em>).
+      Todo o processamento acontece no browser via
+      <strong style="color:var(--accent)">Pyodide</strong> — nenhum dado sai da sua máquina.
+    </p>
+  </header>
+
+  <!-- ── Upload section ──────────────────────────────────────────────── -->
+  <section class="upload-section">
+    <div id="drop-zone" class="drop-zone">
+      <input type="file" id="file-input" accept=".csv,.xls,.psr">
+      <div class="drop-zone-icon">↑</div>
+      <div class="drop-zone-text">Arraste o arquivo aqui ou clique para selecionar</div>
+      <div class="drop-zone-hint">costmexx.csv &nbsp;·&nbsp; costmexx.xls &nbsp;·&nbsp; costmexx.psr</div>
+    </div>
+
+    <div class="url-row">
+      <span class="url-label">ou URL / caminho local:</span>
+      <input
+        type="text"
+        id="url-input"
+        class="url-input"
+        placeholder="http://localhost:8080/data/costmexx.csv"
+        autocomplete="off"
+        spellcheck="false"
+      >
+      <button id="btn-load-url" class="btn-primary">Carregar</button>
+    </div>
+  </section>
+
+  <!-- ── Stats ───────────────────────────────────────────────────────── -->
+  <div id="stats-section" class="stats-row" style="display:none">
+    <div class="stat">
+      <div class="val" id="stat-stages">—</div>
+      <div class="key">Estágios</div>
+    </div>
+    <div class="stat">
+      <div class="val" id="stat-cuts">—</div>
+      <div class="key">Cortes totais</div>
+    </div>
+    <div class="stat">
+      <div class="val" id="stat-max-cut">—</div>
+      <div class="key">Cortes máx. / estágio</div>
+    </div>
+    <div class="stat wide">
+      <div class="val" id="stat-rhs-range">—</div>
+      <div class="key">Range RHS (<span id="stat-rhs-unit">—</span>)</div>
+    </div>
+    <div class="stat">
+      <div class="val" id="stat-hydros">—</div>
+      <div class="key">Reservatórios</div>
+    </div>
+    <div class="stat wide">
+      <div class="val mono" id="stat-filename">—</div>
+      <div class="key">Arquivo carregado</div>
+    </div>
+  </div>
+
+  <!-- ── Controls ────────────────────────────────────────────────────── -->
+  <div id="controls-section" class="controls-row" style="display:none">
+    <div class="control-group">
+      <label for="sel-hydro">Reservatório</label>
+      <select id="sel-hydro" class="ctrl-select"></select>
+    </div>
+    <div class="control-group">
+      <label for="sel-stage">Estágio (Envelope)</label>
+      <select id="sel-stage" class="ctrl-select"></select>
+    </div>
+    <div class="control-group">
+      <label for="inp-vol-max">Vol. máx. (hm³)</label>
+      <input type="number" id="inp-vol-max" class="ctrl-input" value="1000" min="1" step="100">
+    </div>
+  </div>
+
+  <!-- ── Charts ──────────────────────────────────────────────────────── -->
+  <div id="charts-section" style="display:none">
+    <div class="charts-grid">
+
+      <!-- 01 · RHS por Estágio -->
+      <div class="chart-card">
+        <h2>01 · RHS por Estágio</h2>
+        <p class="desc">Intercepto de cada corte ao longo dos estágios. Representa o custo futuro esperado em estado de referência (volume nulo).</p>
+        <div id="chart-rhs" class="plot-area"></div>
+      </div>
+
+      <!-- 02 · Valor da Água por Estágio -->
+      <div class="chart-card">
+        <h2>02 · Valor da Água por Estágio</h2>
+        <p class="desc">Coeficiente do volume armazenado (sensibilidade ∂FCF/∂V) para o reservatório selecionado em cada corte.</p>
+        <div id="chart-wv" class="plot-area"></div>
+      </div>
+
+      <!-- 03 · Envelope da FCF (wide) -->
+      <div class="chart-card wide">
+        <h2>03 · Envelope da FCF — FCF(V) = max<sub>k</sub>{ RHS<sub>k</sub> + wv<sub>k</sub> · V }</h2>
+        <p class="desc">Forma da FCF para o estágio selecionado. Cada linha pontilhada é um corte linear; o envelope (linha verde) é o supremo sobre todos os cortes — a FCF real aproximada.</p>
+        <div id="chart-envelope" class="plot-area"></div>
+      </div>
+
+      <!-- 04 · Heatmap (wide) -->
+      <div class="chart-card wide">
+        <h2>04 · Heatmap — RHS: Cortes × Estágios</h2>
+        <p class="desc">Mapa de calor do valor RHS por combinação estágio × número de corte. Células cinzas indicam cortes ausentes naquele estágio.</p>
+        <div id="chart-heatmap" class="plot-area"></div>
+      </div>
+
+      <!-- 05 · 3D RHS -->
+      <div class="chart-card">
+        <h2>05 · 3D — Stage × Cut × RHS</h2>
+        <p class="desc">Superfície 3D do intercepto da FCF ao longo dos estágios e cortes. Arraste para rotacionar.</p>
+        <div id="chart-3d-rhs" class="plot-area-3d"></div>
+      </div>
+
+      <!-- 06 · 3D Valor da Água -->
+      <div class="chart-card">
+        <h2>06 · 3D — Stage × Cut × Val. Água</h2>
+        <p class="desc">Superfície 3D do valor da água do reservatório selecionado em função do estágio e do corte.</p>
+        <div id="chart-3d-wv" class="plot-area-3d"></div>
+      </div>
+
+      <!-- 07 · Box Plot -->
+      <div class="chart-card">
+        <h2>07 · Box Plot — RHS por Estágio</h2>
+        <p class="desc">Distribuição estatística dos valores RHS em cada estágio. Mostra mediana, quartis e valores individuais.</p>
+        <div id="chart-boxplot" class="plot-area"></div>
+      </div>
+
+      <!-- 08 · Tabela de Dados (wide) -->
+      <div class="chart-card wide">
+        <h2>08 · Tabela de Dados</h2>
+        <p class="desc">Todos os cortes da FCF em formato tabular com estágio, corte, iteração, RHS e valores da água por reservatório.</p>
+        <div id="chart-table" class="table-container"></div>
+      </div>
+
+    </div><!-- .charts-grid -->
+  </div><!-- #charts-section -->
+
+  <footer>
+    <span>FCF Viewer &nbsp;·&nbsp; SDDP &nbsp;·&nbsp; Pyodide + Plotly.js</span>
+    <span id="ts"></span>
+  </footer>
+
+</div><!-- .container -->
+
+<!-- ── JS modules ──────────────────────────────────────────────────────── -->
+<script src="static/js/charts.js"></script>
+<script src="static/js/data.js"></script>
+<script src="static/js/ui.js"></script>
+
+<script>
+// ── App bootstrap ─────────────────────────────────────────────────────────
+
+/**
+ * Called by ui.js after a file is successfully parsed.
+ * Renders all charts and shows the dashboard sections.
+ */
+function onDataLoaded(data) {
+  setFcfData(data);
+  updateStats(data);
+  setupControls(data);
+
+  showSection('stats-section');
+  showSection('controls-section');
+  showSection('charts-section');
+
+  const h0 = data.hydros[0];
+  const s0 = data.stages[0];
+
+  renderRhsByStage(        'chart-rhs',      data);
+  renderWaterValueByStage( 'chart-wv',       data, h0);
+  renderFcfEnvelope(       'chart-envelope', data, s0, h0, 1000);
+  renderHeatmapRhs(        'chart-heatmap',  data);
+  renderSurface3dRhs(      'chart-3d-rhs',   data);
+  renderSurface3dWaterValue('chart-3d-wv',   data, h0);
+  renderBoxplotRhs(        'chart-boxplot',  data);
+  renderDataTable(         'chart-table',    data);
+
+  document.getElementById('ts').textContent =
+    'Carregado em ' + new Date().toLocaleString('pt-BR');
+
+  // Scroll smoothly to stats after a short delay so charts can paint
+  setTimeout(() => {
+    document.getElementById('stats-section')
+      .scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 200);
+}
+
+// Boot
+(async () => {
+  setupDropZone();
+  setupUrlLoad();
+  try {
+    await initPyodide(msg => setLoading(msg || 'Inicializando…'));
+    setLoading(null);
+  } catch (err) {
+    setLoading(null);
+    showError('Falha ao inicializar Pyodide: ' + err.message);
+  }
+})();
+</script>
+
+</body>
+</html>
