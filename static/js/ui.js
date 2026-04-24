@@ -1,42 +1,84 @@
 /**
- * ui.js — Upload, language switcher, controls, stats, helpers
+ * ui.js — Language switcher, tabs, upload, controls, stats, samples
  *
  * Depends on: i18n.js  data.js  charts.js
- * Calls back into the inline script in index.html: onDataLoaded()
+ * index.html inline script defines: onDataLoaded()
  */
 
-// ── Language switcher ─────────────────────────────────────────────────────
+/* ── Language switcher ───────────────────────────────────────────────────── */
 
 function setupLangSwitcher() {
   document.querySelectorAll('.lang-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const lang = btn.dataset.lang;
       applyLang(lang);
-      // Re-render charts if data is loaded (axis labels change)
-      const data = getFcfData();
-      if (data) renderAll(data);
+      // Re-render if data is loaded (axis labels change with language)
+      const d = getFcfData();
+      if (d) renderAll(d);
     });
   });
-  // Apply saved/default language
   initLang();
 }
 
-// ── Upload zone ───────────────────────────────────────────────────────────
+/* ── Tab navigation ──────────────────────────────────────────────────────── */
+
+function setupTabs() {
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => _activateTab(btn.dataset.tab));
+  });
+}
+
+function _activateTab(id) {
+  document.querySelectorAll('.tab-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.tab === id)
+  );
+  document.querySelectorAll('.tab-panel').forEach(p =>
+    p.classList.toggle('active', p.id === id)
+  );
+  // Trigger Plotly resize for 3D charts that may have rendered while hidden
+  setTimeout(() => window.dispatchEvent(new Event('resize')), 50);
+}
+
+function activateFirstTab() {
+  const first = document.querySelector('.tab-btn');
+  if (first) _activateTab(first.dataset.tab);
+}
+
+/* ── Sample loaders ──────────────────────────────────────────────────────── */
+
+function setupSamples() {
+  document.querySelectorAll('.sample-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const url = btn.dataset.url;
+      if (!url) return;
+      btn.classList.add('loading');
+      setLoading(btn.querySelector('.sample-btn-name').textContent + '…');
+      try {
+        const d = await parseFcfUrl(url);
+        onDataLoaded(d);
+      } catch (e) {
+        showError(e.message);
+      } finally {
+        btn.classList.remove('loading');
+        setLoading(null);
+      }
+    });
+  });
+}
+
+/* ── Upload zone ─────────────────────────────────────────────────────────── */
 
 function setupDropZone() {
   const zone  = document.getElementById('drop-zone');
   const input = document.getElementById('file-input');
 
-  zone.addEventListener('dragover', e => {
-    e.preventDefault();
-    zone.classList.add('drag-over');
-  });
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
   zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
   zone.addEventListener('drop', async e => {
     e.preventDefault();
     zone.classList.remove('drag-over');
-    const file = e.dataTransfer.files[0];
-    if (file) await _handleFile(file);
+    const f = e.dataTransfer.files[0];
+    if (f) await _handleFile(f);
   });
   zone.addEventListener('click', () => input.click());
   input.addEventListener('change', async e => {
@@ -46,10 +88,10 @@ function setupDropZone() {
 }
 
 async function _handleFile(file) {
-  setLoading(`${t('upload.title').split(' ')[0]}… ${file.name}`);
+  setLoading(file.name + '…');
   try {
-    const data = await parseFcfFile(file);
-    onDataLoaded(data);
+    const d = await parseFcfFile(file);
+    onDataLoaded(d);
   } catch (e) {
     showError(e.message);
   } finally {
@@ -57,22 +99,21 @@ async function _handleFile(file) {
   }
 }
 
-// ── URL / path loader ─────────────────────────────────────────────────────
+/* ── URL loader ──────────────────────────────────────────────────────────── */
 
 function setupUrlLoad() {
   const btn = document.getElementById('btn-load-url');
   const inp = document.getElementById('url-input');
-
-  btn.addEventListener('click',   () => _handleUrl(inp.value.trim()));
-  inp.addEventListener('keydown', e  => { if (e.key === 'Enter') _handleUrl(inp.value.trim()); });
+  btn.addEventListener('click',    () => _loadUrl(inp.value.trim()));
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') _loadUrl(inp.value.trim()); });
 }
 
-async function _handleUrl(url) {
+async function _loadUrl(url) {
   if (!url) return;
-  setLoading(`${url}…`);
+  setLoading(url.split('/').pop() + '…');
   try {
-    const data = await parseFcfUrl(url);
-    onDataLoaded(data);
+    const d = await parseFcfUrl(url);
+    onDataLoaded(d);
   } catch (e) {
     showError(e.message);
   } finally {
@@ -80,88 +121,95 @@ async function _handleUrl(url) {
   }
 }
 
-// ── Export JSON button ────────────────────────────────────────────────────
-
+/* ── Export button ───────────────────────────────────────────────────────── */
 function setupExportBtn() {
-  document.getElementById('btn-export')
-    ?.addEventListener('click', exportFcfJson);
+  document.getElementById('btn-export')?.addEventListener('click', exportFcfJson);
 }
 
-// ── Controls ──────────────────────────────────────────────────────────────
+/* ── Controls ────────────────────────────────────────────────────────────── */
 
 function setupControls(data) {
-  data._selectedStage = data.stages[0];
-  data._selectedHydro = data.hydros[0];
-  data._volMax        = 1000;
+  data._hydro  = data.hydros[0];
+  data._stage  = data.stages[0];
+  data._volMax = 1000;
 
-  const stgSel   = document.getElementById('sel-stage');
   const hydSel   = document.getElementById('sel-hydro');
+  const stgSel   = document.getElementById('sel-stage');
   const volInput = document.getElementById('inp-vol-max');
 
-  stgSel.innerHTML = data.stages
-    .map(s => `<option value="${s}">${t('ax.stage')} ${s}</option>`)
-    .join('');
-  stgSel.value = data._selectedStage;
-
+  /* Hydro selector */
   hydSel.innerHTML = data.hydros
     .map(h => `<option value="${h}">${h}</option>`)
     .join('');
-  hydSel.value = data._selectedHydro;
+  hydSel.value = data._hydro;
+
+  /* Stage selector */
+  stgSel.innerHTML = data.stages
+    .map(s => `<option value="${s}">${t('ax.stage')} ${s}</option>`)
+    .join('');
+  stgSel.value = data._stage;
 
   volInput.value = data._volMax;
 
-  stgSel.addEventListener('change', () => {
-    data._selectedStage = parseInt(stgSel.value, 10);
-    renderFcfEnvelope('chart-envelope', data, data._selectedStage, data._selectedHydro, data._volMax);
-  });
+  hydSel.onchange = () => {
+    data._hydro = hydSel.value;
+    renderWaterValue(        'chart-wv',     data, data._hydro);
+    renderSurface3dWaterValue('chart-3d-wv', data, data._hydro);
+    renderEnvelope(          'chart-envelope', data, data._stage, data._hydro, data._volMax);
+  };
 
-  hydSel.addEventListener('change', () => {
-    data._selectedHydro = hydSel.value;
-    renderWaterValueByStage(  'chart-wv',       data, data._selectedHydro);
-    renderSurface3dWaterValue('chart-3d-wv',    data, data._selectedHydro);
-    renderFcfEnvelope(        'chart-envelope', data, data._selectedStage, data._selectedHydro, data._volMax);
-  });
+  stgSel.onchange = () => {
+    data._stage = parseInt(stgSel.value, 10);
+    renderEnvelope('chart-envelope', data, data._stage, data._hydro, data._volMax);
+  };
 
-  volInput.addEventListener('change', () => {
+  volInput.onchange = () => {
     data._volMax = parseFloat(volInput.value) || 1000;
-    renderFcfEnvelope('chart-envelope', data, data._selectedStage, data._selectedHydro, data._volMax);
-  });
+    renderEnvelope('chart-envelope', data, data._stage, data._hydro, data._volMax);
+  };
 }
 
-// ── Stats panel ───────────────────────────────────────────────────────────
+/* ── Stats panel ─────────────────────────────────────────────────────────── */
 
 function updateStats(data) {
-  const rhsVals = data.cuts.map(c => c.rhs).filter(v => v != null);
-  const minRhs  = Math.min(...rhsVals);
-  const maxRhs  = Math.max(...rhsVals);
-  const fmt     = v => v.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
+  const rhs  = data.cuts.map(c => c.rhs).filter(v => v != null);
+  const lo   = Math.min(...rhs);
+  const hi   = Math.max(...rhs);
+  const fmt  = v => v.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
 
-  _setText('stat-stages',    data.stages.length);
-  _setText('stat-cuts',      data.cuts.length);
-  _setText('stat-max-cut',   data.max_cut);
-  _setText('stat-rhs-range', `${fmt(minRhs)} – ${fmt(maxRhs)}`);
-  _setText('stat-rhs-unit',  data.rhs_unit);
-  _setText('stat-hydros',    data.hydros.length);
-  _setText('stat-filename',  data.filename || '—');
+  _set('stat-stages',    data.stages.length);
+  _set('stat-cuts',      data.cuts.length);
+  _set('stat-max-cut',   data.max_cut);
+  _set('stat-rhs-range', `${fmt(lo)} – ${fmt(hi)}`);
+  _set('stat-rhs-unit',  data.rhs_unit);
+  _set('stat-reservoirs', data.hydros.length);
+  _set('stat-file',      data.filename || '—');
+
+  /* Navbar filename */
+  const nf = document.getElementById('nav-file');
+  if (nf) nf.textContent = data.filename || '';
 }
 
-// ── Metadata panel (PSR binary info) ─────────────────────────────────────
+/* ── Metadata panel (PSR header values) ──────────────────────────────────── */
 
 function updateMetaPanel(data) {
-  const meta = data.metadata;
+  const meta  = data.metadata || {};
   const panel = document.getElementById('meta-panel');
-  if (!panel || !meta || Object.keys(meta).length === 0) return;
+  if (!panel || !Object.keys(meta).length) return;
 
   const items = [];
   if (meta.anoini) {
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    items.push(`<span class="meta-item"><strong>${t('meta.period')}</strong> ${months[(meta.mesini||1)-1]}/${meta.anoini} · ${meta.nper} ${t('ax.stage').toLowerCase()}s</span>`);
+    const m = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    items.push(`<span class="meta-item"><strong>${t('meta.period')}</strong> ${m[(meta.mesini||1)-1]}/${meta.anoini}</span>`);
   }
+  if (meta.nper)    items.push(`<span class="meta-item"><strong>${t('meta.stages')}</strong> ${meta.nper}</span>`);
   if (meta.iter)    items.push(`<span class="meta-item"><strong>${t('meta.iter')}</strong> ${meta.iter}</span>`);
-  if (meta.zinf)    items.push(`<span class="meta-item"><strong>${t('meta.zinf')}</strong> ${meta.zinf.toFixed(2)} ${data.rhs_unit}</span>`);
-  if (meta.zsup)    items.push(`<span class="meta-item"><strong>${t('meta.zsup')}</strong> ${meta.zsup.toFixed(2)} ${data.rhs_unit}</span>`);
-  if (meta.itbst)   items.push(`<span class="meta-item"><strong>${t('meta.itbst')}</strong> ${meta.itbst}</span>`);
-  if (meta.zsupbst) items.push(`<span class="meta-item"><strong>${t('meta.zsupbst')}</strong> ${meta.zsupbst.toFixed(2)} ${data.rhs_unit}</span>`);
+  if (meta.zinf != null) items.push(`<span class="meta-item"><strong>${t('meta.zinf')}</strong> ${_fmtNum(meta.zinf)} ${data.rhs_unit}</span>`);
+  if (meta.zsup != null) items.push(`<span class="meta-item"><strong>${t('meta.zsup')}</strong> ${_fmtNum(meta.zsup)} ${data.rhs_unit}</span>`);
+  if (meta.zinf != null && meta.zsup != null && meta.zsup !== 0) {
+    const gap = Math.abs((meta.zsup - meta.zinf) / meta.zsup * 100).toFixed(2);
+    items.push(`<span class="meta-item"><strong>${t('meta.gap')}</strong> ${gap}%</span>`);
+  }
 
   if (items.length) {
     panel.innerHTML = items.join('');
@@ -169,11 +217,16 @@ function updateMetaPanel(data) {
   }
 }
 
-// ── UI helpers ────────────────────────────────────────────────────────────
+/* ── Section visibility ──────────────────────────────────────────────────── */
 
-function showSection(id) {
-  document.getElementById(id).style.display = '';
+function showDashboard() {
+  document.getElementById('stats-section')  .style.display = '';
+  document.getElementById('meta-panel')     .classList.add('visible');
+  document.querySelector('.controls-bar')   .classList.add('visible');
+  document.querySelector('.tabs-wrapper')   .classList.add('visible');
 }
+
+/* ── Loading / error ─────────────────────────────────────────────────────── */
 
 function setLoading(msg) {
   const el  = document.getElementById('loading');
@@ -187,10 +240,16 @@ function showError(msg) {
   el.textContent = msg;
   el.style.display = '';
   clearTimeout(el._t);
-  el._t = setTimeout(() => { el.style.display = 'none'; }, 10000);
+  el._t = setTimeout(() => { el.style.display = 'none'; }, 12000);
 }
 
-function _setText(id, val) {
+/* ── Helpers ─────────────────────────────────────────────────────────────── */
+
+function _set(id, val) {
   const el = document.getElementById(id);
   if (el) el.textContent = val;
+}
+
+function _fmtNum(v) {
+  return v.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
 }

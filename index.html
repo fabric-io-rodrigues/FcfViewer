@@ -5,37 +5,34 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PSR FCF Viewer</title>
 
-  <!-- Plotly -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.0/plotly.min.js"></script>
-  <!-- Pyodide (Python → WebAssembly) -->
   <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
-  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet">
-  <!-- Styles -->
   <link rel="stylesheet" href="static/css/style.css">
 </head>
 <body>
 
-<!-- ── Loading overlay ─────────────────────────────────────────────────── -->
+<!-- ─── Loading overlay ────────────────────────────────────────────────────── -->
 <div id="loading" class="loading-overlay">
   <div class="loading-box">
     <div class="loading-spinner"></div>
-    <div id="loading-msg" data-i18n="loading.init">Inicializando Pyodide…</div>
+    <div id="loading-msg" data-i18n="loading.boot">Carregando…</div>
   </div>
 </div>
 
-<!-- ── Error banner ────────────────────────────────────────────────────── -->
+<!-- ─── Error banner ───────────────────────────────────────────────────────── -->
 <div id="error-banner" class="error-banner" style="display:none"></div>
 
-<!-- ── Navigation bar ──────────────────────────────────────────────────── -->
+<!-- ─── Navigation ─────────────────────────────────────────────────────────── -->
 <nav class="navbar">
-  <a class="navbar-brand" href="#">
-    <div class="navbar-logo">PSR</div>
-    <span class="navbar-name">FCF Viewer</span>
-    <span class="navbar-tag">SDDP</span>
+  <a class="nav-brand" href="#">
+    <div class="nav-logo">PSR</div>
+    <span class="nav-title">FCF Viewer</span>
+    <span class="nav-tag" data-i18n="nav.tag">SDDP</span>
   </a>
-  <div class="navbar-right">
-    <div class="lang-switcher" role="group" aria-label="Language">
+  <div class="nav-right">
+    <span class="nav-file" id="nav-file"></span>
+    <div class="lang-switcher">
       <button class="lang-btn" data-lang="pt">PT</button>
       <button class="lang-btn" data-lang="es">ES</button>
       <button class="lang-btn" data-lang="en">EN</button>
@@ -43,204 +40,276 @@
   </div>
 </nav>
 
-<!-- ── Main content ────────────────────────────────────────────────────── -->
-<div class="container">
+<!-- ─── Page ────────────────────────────────────────────────────────────────── -->
+<main class="page">
 
-  <header>
-    <div class="label" data-i18n="header.label">SDDP · Função de Custo Futuro</div>
-    <h1>
-      <span data-i18n="header.title">FCF Viewer</span>
-      <span class="subtitle" data-i18n="header.subtitle">— Visualizador de Cortes FCF</span>
-    </h1>
-    <p data-i18n-html="header.desc">
-      Visualize os cortes da Função de Custo Futuro gerados pelo SDDP.
-      Suporte a <code>.csv</code>, <code>.xls</code> (TSV) e
-      <code>.psr</code> (binário nativo).
-      Todo o processamento acontece no browser via <strong>Pyodide</strong>.
-    </p>
-  </header>
-
-  <!-- ── Upload ──────────────────────────────────────────────────────── -->
+  <!-- ── Upload section ─────────────────────────────────────────────────── -->
   <section class="upload-section">
-    <div id="drop-zone" class="drop-zone">
-      <input type="file" id="file-input" accept=".csv,.xls,.psr,.json" style="display:none">
-      <div class="drop-zone-icon" data-i18n="upload.icon">↑</div>
-      <div class="drop-zone-text" data-i18n="upload.title">
-        Arraste o arquivo aqui ou clique para selecionar
+
+    <div class="upload-hero">
+      <!-- Drop zone -->
+      <div id="drop-zone" class="drop-zone">
+        <input type="file" id="file-input" accept=".psr,.csv,.xls,.json" style="display:none">
+        <div class="drop-zone-icon">↑</div>
+        <div class="drop-zone-text" data-i18n="up.drop">Arraste o arquivo aqui ou clique para selecionar</div>
+        <div class="drop-zone-hint" data-i18n="up.hint">costmexx.psr · costmexx.xls · costmexx.csv</div>
       </div>
-      <div class="drop-zone-hint" data-i18n="upload.hint">
-        costmexx.csv · costmexx.xls · costmexx.psr · dados.json
+
+      <!-- Sample cases panel -->
+      <div class="samples-panel">
+        <span class="samples-label" data-i18n="up.samples">Casos de exemplo</span>
+
+        <button class="sample-btn"
+          data-url="sample/caso_exemplo_costmexx.psr">
+          <span class="sample-btn-dot"></span>
+          <span class="sample-btn-name" data-i18n="s.exemplo">Exemplo Didático</span>
+          <span class="sample-btn-meta">4 KB · 1 res · 11 est</span>
+        </button>
+
+        <button class="sample-btn"
+          data-url="sample/caso_Island_costsexx.psr">
+          <span class="sample-btn-dot"></span>
+          <span class="sample-btn-name" data-i18n="s.island">Sistema Ilha</span>
+          <span class="sample-btn-meta">799 KB · 13 res · 103 est</span>
+        </button>
+
+        <button class="sample-btn"
+          data-url="sample/caso_bolivia_costmebo.psr">
+          <span class="sample-btn-dot"></span>
+          <span class="sample-btn-name" data-i18n="s.bolivia">Bolívia</span>
+          <span class="sample-btn-meta">3.9 MB · 40 res · 59 est</span>
+        </button>
+
+        <button class="sample-btn"
+          data-url="sample/caso_brasil_costmexx.psr">
+          <span class="sample-btn-dot"></span>
+          <span class="sample-btn-name" data-i18n="s.brasil">Brasil</span>
+          <span class="sample-btn-meta">13.8 MB · 101 res · 119 est</span>
+        </button>
       </div>
     </div>
 
+    <!-- URL row -->
     <div class="url-row">
-      <span class="url-label" data-i18n="upload.url_label">ou URL / caminho local:</span>
-      <input
-        type="text"
-        id="url-input"
-        class="url-input"
-        data-i18n-ph="upload.url_ph"
-        placeholder="http://localhost:8080/data/costmexx.psr"
-        autocomplete="off"
-        spellcheck="false"
-      >
-      <button id="btn-load-url" class="btn-primary" data-i18n="upload.btn">Carregar</button>
+      <span class="url-label" data-i18n="up.url_lbl">ou endereço:</span>
+      <input type="text" id="url-input" class="url-input"
+        data-i18n-ph="up.url_ph"
+        placeholder="http://localhost/data/costmexx.psr"
+        autocomplete="off" spellcheck="false">
+      <button id="btn-load-url" class="btn-primary" data-i18n="up.btn">Carregar</button>
     </div>
   </section>
 
-  <!-- ── PSR metadata panel (shown only for .psr files) ─────────────── -->
-  <div id="meta-panel" class="meta-panel"></div>
-
-  <!-- ── Stats ───────────────────────────────────────────────────────── -->
-  <div id="stats-section" class="stats-row" style="display:none">
-    <div class="stat">
-      <div class="val" id="stat-stages">—</div>
-      <div class="key" data-i18n="stat.stages">Estágios</div>
+  <!-- ── Stats bar ──────────────────────────────────────────────────────── -->
+  <div id="stats-section" class="stats-bar" style="display:none">
+    <div class="stat-card">
+      <div class="stat-val" id="stat-stages">—</div>
+      <div class="stat-label" data-i18n="st.stages">Estágios</div>
     </div>
-    <div class="stat">
-      <div class="val" id="stat-cuts">—</div>
-      <div class="key" data-i18n="stat.cuts">Cortes totais</div>
+    <div class="stat-card">
+      <div class="stat-val" id="stat-cuts">—</div>
+      <div class="stat-label" data-i18n="st.cuts">Cortes totais</div>
     </div>
-    <div class="stat">
-      <div class="val" id="stat-max-cut">—</div>
-      <div class="key" data-i18n="stat.max_cut">Cortes máx. / estágio</div>
+    <div class="stat-card">
+      <div class="stat-val" id="stat-max-cut">—</div>
+      <div class="stat-label" data-i18n="st.max_cut">Cortes / estágio</div>
     </div>
-    <div class="stat wide">
-      <div class="val" id="stat-rhs-range">—</div>
-      <div class="key">
-        <span data-i18n="stat.rhs_range">Range RHS</span>
+    <div class="stat-card wide">
+      <div class="stat-val" id="stat-rhs-range">—</div>
+      <div class="stat-label">
+        <span data-i18n="st.rhs_range">Intervalo RHS</span>
         (<span id="stat-rhs-unit">—</span>)
       </div>
     </div>
-    <div class="stat">
-      <div class="val" id="stat-hydros">—</div>
-      <div class="key" data-i18n="stat.hydros">Reservatórios</div>
+    <div class="stat-card">
+      <div class="stat-val" id="stat-reservoirs">—</div>
+      <div class="stat-label" data-i18n="st.reservoirs">Reservatórios</div>
     </div>
-    <div class="stat wide">
-      <div class="val sm" id="stat-filename">—</div>
-      <div class="key" data-i18n="stat.filename">Arquivo</div>
+    <div class="stat-card wide">
+      <div class="stat-val sm" id="stat-file">—</div>
+      <div class="stat-label" data-i18n="st.file">Arquivo</div>
     </div>
   </div>
 
-  <!-- ── Controls ────────────────────────────────────────────────────── -->
-  <div id="controls-section" class="controls-row" style="display:none">
-    <div class="control-group">
-      <label for="sel-hydro" data-i18n="ctrl.hydro">Reservatório</label>
+  <!-- ── Metadata panel (PSR header info) ──────────────────────────────── -->
+  <div id="meta-panel" class="meta-panel"></div>
+
+  <!-- ── Controls bar ──────────────────────────────────────────────────── -->
+  <div class="controls-bar">
+    <div class="ctrl-group">
+      <label for="sel-hydro" data-i18n="ctrl.reservoir">Reservatório</label>
       <select id="sel-hydro" class="ctrl-select"></select>
     </div>
-    <div class="control-group">
-      <label for="sel-stage" data-i18n="ctrl.stage">Estágio (Envelope)</label>
+    <div class="ctrl-group">
+      <label for="sel-stage" data-i18n="ctrl.stage">Estágio</label>
       <select id="sel-stage" class="ctrl-select"></select>
     </div>
-    <div class="control-group">
+    <div class="ctrl-group">
       <label for="inp-vol-max" data-i18n="ctrl.vol_max">Vol. máx. (hm³)</label>
-      <input type="number" id="inp-vol-max" class="ctrl-input" value="1000" min="1" step="100">
+      <input type="number" id="inp-vol-max" class="ctrl-input"
+        value="1000" min="1" step="100">
     </div>
-    <div class="spacer"></div>
-    <div class="control-group" style="justify-content:flex-end">
+    <div class="ctrl-spacer"></div>
+    <div class="ctrl-group" style="justify-content:flex-end">
       <label>&nbsp;</label>
-      <button id="btn-export" class="btn-secondary" data-i18n="ctrl.export">Exportar JSON</button>
+      <button id="btn-export" class="btn-secondary" data-i18n="ctrl.export">
+        Exportar JSON
+      </button>
     </div>
   </div>
 
-  <!-- ── Charts ──────────────────────────────────────────────────────── -->
-  <div id="charts-section" style="display:none">
-    <div class="charts-grid">
+  <!-- ── Tabs ───────────────────────────────────────────────────────────── -->
+  <div class="tabs-wrapper">
 
-      <!-- 01 · RHS por Estágio -->
-      <div class="chart-card">
-        <h2 data-i18n="c01.title">01 · RHS por Estágio</h2>
-        <p class="desc" data-i18n="c01.desc">
-          Intercepto de cada corte ao longo dos estágios.
-        </p>
-        <div id="chart-rhs" class="plot-area"></div>
+    <nav class="tabs-nav">
+      <button class="tab-btn active" data-tab="tab-curves">
+        <span class="tab-icon">⌇</span>
+        <span data-i18n="tab.curves">Curvas FCF</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-distrib">
+        <span class="tab-icon">⊞</span>
+        <span data-i18n="tab.distrib">Distribuição</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-surfaces">
+        <span class="tab-icon">◈</span>
+        <span data-i18n="tab.surfaces">Superfícies 3D</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-data">
+        <span class="tab-icon">≡</span>
+        <span data-i18n="tab.data">Dados</span>
+      </button>
+    </nav>
+
+    <!-- ── Tab 1: Curvas FCF ─────────────────────────────────────────── -->
+    <div id="tab-curves" class="tab-panel active">
+      <div class="charts-grid">
+
+        <!-- Envelope (full width) -->
+        <div class="chart-card wide">
+          <div class="chart-card-header">
+            <div class="chart-card-title" data-i18n="c.envelope.t">Função de Custo Futuro — Envelope</div>
+            <div class="chart-card-desc" data-i18n="c.envelope.d">
+              FCF(V) = max { c(k) + wv(k)·V } — cada linha tracejada é um corte; a curva sólida é o envelope convexo.
+            </div>
+          </div>
+          <div id="chart-envelope" class="plot-area-lg"></div>
+        </div>
+
+        <!-- RHS by Stage -->
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div class="chart-card-title" data-i18n="c.rhs.t">Interceptos dos Cortes por Estágio</div>
+            <div class="chart-card-desc" data-i18n="c.rhs.d">
+              Valor do intercepto c(k) de cada corte em função do estágio.
+            </div>
+          </div>
+          <div id="chart-rhs" class="plot-area"></div>
+        </div>
+
+        <!-- Water Value by Stage -->
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div class="chart-card-title" data-i18n="c.wv.t">Valor da Água por Estágio</div>
+            <div class="chart-card-desc" data-i18n="c.wv.d">
+              Coeficiente wv(k) — variação do custo futuro por hm³ adicional armazenado.
+            </div>
+          </div>
+          <div id="chart-wv" class="plot-area"></div>
+        </div>
+
       </div>
+    </div>
 
-      <!-- 02 · Valor da Água -->
-      <div class="chart-card">
-        <h2 data-i18n="c02.title">02 · Valor da Água por Estágio</h2>
-        <p class="desc" data-i18n="c02.desc">
-          Coeficiente ∂FCF/∂V para o reservatório selecionado.
-        </p>
-        <div id="chart-wv" class="plot-area"></div>
+    <!-- ── Tab 2: Distribuição ──────────────────────────────────────────── -->
+    <div id="tab-distrib" class="tab-panel">
+      <div class="charts-grid">
+
+        <!-- Box Plot -->
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div class="chart-card-title" data-i18n="c.box.t">Distribuição dos Interceptos por Estágio</div>
+            <div class="chart-card-desc" data-i18n="c.box.d">
+              Dispersão dos interceptos c(k) por estágio — mediana, quartis e pontos individuais.
+            </div>
+          </div>
+          <div id="chart-box" class="plot-area"></div>
+        </div>
+
+        <!-- Heatmap -->
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div class="chart-card-title" data-i18n="c.heatmap.t">Mapa de Calor — Interceptos</div>
+            <div class="chart-card-desc" data-i18n="c.heatmap.d">
+              Visão global dos interceptos. Tons mais escuros indicam maior custo futuro.
+            </div>
+          </div>
+          <div id="chart-heatmap" class="plot-area"></div>
+        </div>
+
       </div>
+    </div>
 
-      <!-- 03 · Envelope da FCF (wide) -->
-      <div class="chart-card wide">
-        <h2 data-i18n="c03.title">03 · Envelope da FCF</h2>
-        <p class="desc" data-i18n="c03.desc">
-          Forma da FCF para o estágio selecionado. Cada linha é um corte linear; o envelope é o supremo.
-        </p>
-        <div id="chart-envelope" class="plot-area"></div>
+    <!-- ── Tab 3: Superfícies 3D ─────────────────────────────────────────── -->
+    <div id="tab-surfaces" class="tab-panel">
+      <div class="charts-grid">
+
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div class="chart-card-title" data-i18n="c.3drhs.t">Superfície 3D — Interceptos da FCF</div>
+            <div class="chart-card-desc" data-i18n="c.3drhs.d">
+              Superfície do intercepto c(k) ao longo dos estágios e cortes. Arraste para rotacionar.
+            </div>
+          </div>
+          <div id="chart-3d-rhs" class="plot-area-3d"></div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div class="chart-card-title" data-i18n="c.3dwv.t">Superfície 3D — Valor da Água</div>
+            <div class="chart-card-desc" data-i18n="c.3dwv.d">
+              Superfície do coeficiente wv(k) para o reservatório selecionado.
+            </div>
+          </div>
+          <div id="chart-3d-wv" class="plot-area-3d"></div>
+        </div>
+
       </div>
+    </div>
 
-      <!-- 04 · Heatmap (wide) -->
-      <div class="chart-card wide">
-        <h2 data-i18n="c04.title">04 · Heatmap — RHS: Cortes × Estágios</h2>
-        <p class="desc" data-i18n="c04.desc">
-          Mapa de calor do valor RHS por estágio × corte.
-        </p>
-        <div id="chart-heatmap" class="plot-area"></div>
+    <!-- ── Tab 4: Dados ──────────────────────────────────────────────────── -->
+    <div id="tab-data" class="tab-panel">
+      <div class="chart-card full">
+        <div class="chart-card-header">
+          <div class="chart-card-title" data-i18n="c.table.t">Tabela de Cortes FCF</div>
+          <div class="chart-card-desc" data-i18n="c.table.d">
+            Todos os cortes com intercepto, valor da água e metadados de iteração.
+          </div>
+        </div>
+        <div id="chart-table" class="table-outer"></div>
       </div>
+    </div>
 
-      <!-- 05 · 3D RHS -->
-      <div class="chart-card">
-        <h2 data-i18n="c05.title">05 · 3D — Stage × Cut × RHS</h2>
-        <p class="desc" data-i18n="c05.desc">
-          Superfície 3D do intercepto da FCF. Arraste para rotacionar.
-        </p>
-        <div id="chart-3d-rhs" class="plot-area-3d"></div>
-      </div>
-
-      <!-- 06 · 3D Water Value -->
-      <div class="chart-card">
-        <h2 data-i18n="c06.title">06 · 3D — Stage × Cut × Val. Água</h2>
-        <p class="desc" data-i18n="c06.desc">
-          Superfície 3D do valor da água do reservatório selecionado.
-        </p>
-        <div id="chart-3d-wv" class="plot-area-3d"></div>
-      </div>
-
-      <!-- 07 · Box Plot -->
-      <div class="chart-card">
-        <h2 data-i18n="c07.title">07 · Box Plot — RHS por Estágio</h2>
-        <p class="desc" data-i18n="c07.desc">
-          Distribuição estatística dos valores RHS em cada estágio.
-        </p>
-        <div id="chart-boxplot" class="plot-area"></div>
-      </div>
-
-      <!-- 08 · Data Table (wide) -->
-      <div class="chart-card wide">
-        <h2 data-i18n="c08.title">08 · Tabela de Dados</h2>
-        <p class="desc" data-i18n="c08.desc">
-          Todos os cortes da FCF em formato tabular.
-        </p>
-        <div id="chart-table" class="table-container"></div>
-      </div>
-
-    </div><!-- .charts-grid -->
-  </div><!-- #charts-section -->
+  </div><!-- .tabs-wrapper -->
 
   <footer>
-    <span data-i18n="footer.src">PSR FCF Viewer · SDDP · Pyodide + Plotly.js</span>
-    <span id="ts"></span>
+    <span data-i18n="footer.brand">PSR FCF Viewer</span>
+    <span id="footer-ts"></span>
   </footer>
 
-</div><!-- .container -->
+</main><!-- .page -->
 
-<!-- ── JS modules ──────────────────────────────────────────────────────── -->
+<!-- ── JS modules ─────────────────────────────────────────────────────────── -->
 <script src="static/js/i18n.js"></script>
 <script src="static/js/charts.js"></script>
 <script src="static/js/data.js"></script>
 <script src="static/js/ui.js"></script>
 
 <script>
-// ── App bootstrap ─────────────────────────────────────────────────────────
+/* ── App controller ─────────────────────────────────────────────────────── */
 
 /**
- * Called from ui.js after a file is successfully parsed.
- * Stores data, renders the dashboard, and shows all sections.
+ * Called by ui.js after a file is successfully parsed.
+ * Renders all charts and reveals the dashboard.
  */
 function onDataLoaded(data) {
   setFcfData(data);
@@ -248,35 +317,37 @@ function onDataLoaded(data) {
   updateMetaPanel(data);
   setupControls(data);
 
-  showSection('stats-section');
-  showSection('controls-section');
-  showSection('charts-section');
+  document.getElementById('stats-section').style.display = '';
+  showDashboard();
+  activateFirstTab();
 
   renderAll(data);
 
-  const loaded = t('footer.loaded');
-  document.getElementById('ts').textContent =
-    `${loaded} ${new Date().toLocaleString('pt-BR')}`;
+  const now = new Date().toLocaleString('pt-BR');
+  document.getElementById('footer-ts').textContent =
+    `${t('footer.loaded')} ${now}`;
 
   setTimeout(() => {
     document.getElementById('stats-section')
       .scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, 150);
+  }, 120);
 }
 
-// Boot sequence
+/* ── Boot ───────────────────────────────────────────────────────────────── */
 (async () => {
-  setupLangSwitcher();   // i18n must be first
+  setupLangSwitcher();
+  setupTabs();
   setupDropZone();
   setupUrlLoad();
+  setupSamples();
   setupExportBtn();
 
   try {
-    await initPyodide(msg => setLoading(msg || t('loading.init')));
+    await initPyodide(msg => setLoading(msg || t('loading.boot')));
     setLoading(null);
   } catch (err) {
     setLoading(null);
-    showError('Pyodide init failed: ' + err.message);
+    showError('Initialization error: ' + err.message);
   }
 })();
 </script>
