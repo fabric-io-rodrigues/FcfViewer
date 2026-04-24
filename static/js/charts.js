@@ -1,42 +1,46 @@
 /**
- * charts.js — All Plotly chart rendering functions for FCF Viewer
+ * charts.js — PSR FCF Viewer · Plotly chart rendering
  *
- * Exports (called from index.html inline script):
- *   renderRhsByStage, renderWaterValueByStage, renderHeatmapRhs,
- *   renderSurface3dRhs, renderSurface3dWaterValue, renderFcfEnvelope,
- *   renderBoxplotRhs, renderDataTable
+ * All functions accept (divId, data, …options) and use the t() helper
+ * from i18n.js for axis labels so re-renders on language change work.
+ *
+ * Chart palette: Tableau 10 + extras (user-specified)
  */
 
 const PALETTE = [
-  '#00d4aa', '#f97316', '#6366f1', '#ec4899',
-  '#22d3ee', '#a3e635', '#fb923c', '#c084fc',
+  '#4E79A7','#F28E2B','#8CD17D','#B6992D','#E15759',
+  '#76B7B2','#FF9DA7','#D7B5A6','#B07AA1','#59A14F',
+  '#F1CE63','#A0CBE8',
 ];
 
-const BASE_LAYOUT = {
+// Plotly layout base for light theme
+const _baseLayout = () => ({
   paper_bgcolor: 'transparent',
-  plot_bgcolor:  'transparent',
+  plot_bgcolor:  '#fafaf8',
   font: {
-    family: "'IBM Plex Mono', monospace",
-    color:  '#94a3b8',
+    family: "'IBM Plex Mono', 'IBM Plex Sans', monospace",
+    color:  '#374151',
     size:   11,
   },
-  margin: { t: 10, b: 50, l: 68, r: 20 },
+  margin: { t: 16, b: 52, l: 70, r: 18 },
   xaxis: {
-    gridcolor: '#1e2a38',
-    zerolinecolor: '#1e2a38',
+    gridcolor:     '#e5e0d8',
+    zerolinecolor: '#ccc5b9',
     tickfont: { size: 10 },
+    linecolor: '#ccc5b9',
   },
   yaxis: {
-    gridcolor: '#1e2a38',
-    zerolinecolor: '#1e2a38',
+    gridcolor:     '#e5e0d8',
+    zerolinecolor: '#ccc5b9',
     tickfont: { size: 10 },
+    linecolor: '#ccc5b9',
   },
-  legend: { bgcolor: 'transparent', font: { size: 10 } },
-};
+  legend: { bgcolor: 'rgba(255,255,255,.7)', font: { size: 10 }, bordercolor: '#e5e0d8', borderwidth: 1 },
+});
 
 const CFG = { responsive: true, displayModeBar: false };
 
-// ── 01 · RHS por Estágio ────────────────────────────────────────────────
+// ── 01 · RHS por Estágio ─────────────────────────────────────────────────
 function renderRhsByStage(divId, data) {
   const traces = [];
   for (let c = 1; c <= data.max_cut; c++) {
@@ -45,20 +49,21 @@ function renderRhsByStage(divId, data) {
     traces.push({
       x: pts.map(d => d.stage),
       y: pts.map(d => d.rhs),
-      name: `Corte ${c}`,
+      name: `${t('ax.cut')} ${c}`,
       mode: 'lines+markers',
       line:   { color: PALETTE[(c - 1) % PALETTE.length], width: 2 },
       marker: { size: 6, color: PALETTE[(c - 1) % PALETTE.length] },
+      hovertemplate: `${t('ax.cut')} ${c}<br>${t('ax.stage')}=%{x}<br>RHS=%{y:.2f}<extra></extra>`,
     });
   }
   Plotly.newPlot(divId, traces, {
-    ...BASE_LAYOUT,
-    xaxis: { ...BASE_LAYOUT.xaxis, title: 'Estágio', dtick: 1 },
-    yaxis: { ...BASE_LAYOUT.yaxis, title: `RHS (${data.rhs_unit})` },
+    ..._baseLayout(),
+    xaxis: { ..._baseLayout().xaxis, title: t('ax.stage'), dtick: 1 },
+    yaxis: { ..._baseLayout().yaxis, title: `RHS (${data.rhs_unit})` },
   }, CFG);
 }
 
-// ── 02 · Valor da Água por Estágio ──────────────────────────────────────
+// ── 02 · Valor da Água por Estágio ───────────────────────────────────────
 function renderWaterValueByStage(divId, data, hydroName) {
   hydroName = hydroName || data.hydros[0];
   const traces = [];
@@ -68,28 +73,29 @@ function renderWaterValueByStage(divId, data, hydroName) {
     traces.push({
       x: pts.map(d => d.stage),
       y: pts.map(d => d.hydros[hydroName]),
-      name: `Corte ${c}`,
+      name: `${t('ax.cut')} ${c}`,
       mode: 'lines+markers',
       line: {
         color: PALETTE[(c - 1) % PALETTE.length],
         width: 2,
-        dash: c > 4 ? 'dot' : 'solid',
+        dash: c > 6 ? 'dot' : 'solid',
       },
       marker: {
         size: 6,
-        symbol: c > 4 ? 'diamond' : 'circle',
+        symbol: c > 6 ? 'diamond' : 'circle',
         color: PALETTE[(c - 1) % PALETTE.length],
       },
+      hovertemplate: `${t('ax.cut')} ${c}<br>${t('ax.stage')}=%{x}<br>${t('ax.wv')}=%{y:.5f}<extra></extra>`,
     });
   }
   Plotly.newPlot(divId, traces, {
-    ...BASE_LAYOUT,
-    xaxis: { ...BASE_LAYOUT.xaxis, title: 'Estágio', dtick: 1 },
-    yaxis: { ...BASE_LAYOUT.yaxis, title: `Val. Água ${hydroName} (${data.vol_unit})` },
+    ..._baseLayout(),
+    xaxis: { ..._baseLayout().xaxis, title: t('ax.stage'), dtick: 1 },
+    yaxis: { ..._baseLayout().yaxis, title: `${t('ax.wv')} ${hydroName} (${data.vol_unit})` },
   }, CFG);
 }
 
-// ── 03 · Envelope da FCF ────────────────────────────────────────────────
+// ── 03 · Envelope da FCF ─────────────────────────────────────────────────
 function renderFcfEnvelope(divId, data, stage, hydroName, volMax) {
   stage     = stage     ?? data.stages[0];
   hydroName = hydroName ?? data.hydros[0];
@@ -108,33 +114,35 @@ function renderFcfEnvelope(divId, data, stage, hydroName, volMax) {
     y.forEach((val, i) => { if (val > envY[i]) envY[i] = val; });
     traces.push({
       x: vols, y,
-      name: `Corte ${cut.cut}`,
+      name: `${t('ax.cut')} ${cut.cut}`,
       mode: 'lines',
       line: { color: PALETTE[idx % PALETTE.length], width: 1.5, dash: 'dot' },
       opacity: 0.55,
-      hovertemplate: `Corte ${cut.cut}<br>V=%{x:.1f} hm³<br>FCF=%{y:.2f} ${data.rhs_unit}<extra></extra>`,
+      hovertemplate:
+        `${t('ax.cut')} ${cut.cut}<br>${t('ax.vol')}=%{x:.1f} hm³<br>FCF=%{y:.2f} ${data.rhs_unit}<extra></extra>`,
     });
   });
 
+  // Envelope line
   traces.push({
     x: vols, y: envY,
-    name: 'Envelope (FCF)',
+    name: `Envelope (${t('ax.fcf')})`,
     mode: 'lines',
-    line: { color: '#00d4aa', width: 3 },
+    line: { color: '#092746', width: 2.5 },
     fill: 'tozeroy',
-    fillcolor: 'rgba(0,212,170,0.07)',
-    hovertemplate: `Envelope<br>V=%{x:.1f} hm³<br>FCF=%{y:.2f} ${data.rhs_unit}<extra></extra>`,
+    fillcolor: 'rgba(9,39,70,.06)',
+    hovertemplate:
+      `Envelope<br>${t('ax.vol')}=%{x:.1f} hm³<br>${t('ax.fcf')}=%{y:.2f} ${data.rhs_unit}<extra></extra>`,
   });
 
   Plotly.newPlot(divId, traces, {
-    ...BASE_LAYOUT,
-    margin: { ...BASE_LAYOUT.margin, b: 55 },
-    xaxis: { ...BASE_LAYOUT.xaxis, title: `Volume ${hydroName} (hm³)` },
-    yaxis: { ...BASE_LAYOUT.yaxis, title: `FCF (${data.rhs_unit})` },
+    ..._baseLayout(),
+    xaxis: { ..._baseLayout().xaxis, title: `${t('ax.vol')} ${hydroName} (hm³)` },
+    yaxis: { ..._baseLayout().yaxis, title: `${t('ax.fcf')} (${data.rhs_unit})` },
   }, CFG);
 }
 
-// ── 04 · Heatmap RHS ────────────────────────────────────────────────────
+// ── 04 · Heatmap RHS ─────────────────────────────────────────────────────
 function renderHeatmapRhs(divId, data) {
   const stages = data.stages;
   const cuts   = Array.from({ length: data.max_cut }, (_, i) => i + 1);
@@ -147,29 +155,31 @@ function renderHeatmapRhs(divId, data) {
   Plotly.newPlot(divId, [{
     type: 'heatmap',
     z,
-    x: cuts.map(c => `Corte ${c}`),
-    y: stages.map(s => `Stage ${s}`),
+    x: cuts.map(c => `${t('ax.cut')} ${c}`),
+    y: stages.map(s => `${t('ax.stage')} ${s}`),
     colorscale: [
-      [0,   '#0f2027'],
-      [0.3, '#1e4d6b'],
-      [0.6, '#00d4aa'],
-      [1,   '#f97316'],
+      [0,   '#fff3df'],
+      [0.35,'#f0c97a'],
+      [0.65,'#ab9671'],
+      [1,   '#092746'],
     ],
     colorbar: {
-      tickfont: { size: 9, color: '#64748b' },
-      title: { text: data.rhs_unit, font: { size: 10, color: '#64748b' } },
+      tickfont: { size: 9, color: '#6b7280' },
+      title: { text: data.rhs_unit, font: { size: 10, color: '#6b7280' } },
     },
     zsmooth: false,
     hoverongaps: false,
+    hovertemplate:
+      `${t('ax.stage')} %{y}<br>${t('ax.cut')} %{x}<br>RHS=%{z:.2f}<extra></extra>`,
   }], {
-    ...BASE_LAYOUT,
-    margin: { t: 10, b: 60, l: 80, r: 80 },
-    xaxis: { ...BASE_LAYOUT.xaxis, title: 'Número do Corte' },
-    yaxis: { ...BASE_LAYOUT.yaxis, title: 'Estágio', autorange: 'reversed' },
+    ..._baseLayout(),
+    margin: { t: 16, b: 60, l: 86, r: 80 },
+    xaxis: { ..._baseLayout().xaxis, title: t('ax.cut_num') },
+    yaxis: { ..._baseLayout().yaxis, title: t('ax.stage'), autorange: 'reversed' },
   }, CFG);
 }
 
-// ── 05 · 3D Surface — RHS ───────────────────────────────────────────────
+// ── 05 · 3D Surface — RHS ────────────────────────────────────────────────
 function renderSurface3dRhs(divId, data) {
   const stages = data.stages;
   const cuts   = Array.from({ length: data.max_cut }, (_, i) => i + 1);
@@ -182,26 +192,26 @@ function renderSurface3dRhs(divId, data) {
   Plotly.newPlot(divId, [{
     type: 'surface', x: stages, y: cuts, z,
     colorscale: [
-      [0, '#0f2027'], [0.4, '#1e4d6b'], [0.7, '#00d4aa'], [1, '#f97316'],
+      [0, '#fff3df'], [0.4, '#e0b86a'], [0.7, '#ab9671'], [1, '#092746'],
     ],
     opacity: 0.92,
     contours: { z: { show: true, usecolormap: true, project: { z: true } } },
-    colorbar: { tickfont: { size: 9, color: '#64748b' } },
+    colorbar: { tickfont: { size: 9, color: '#6b7280' } },
   }], {
     paper_bgcolor: 'transparent',
-    font: { family: "'IBM Plex Mono', monospace", color: '#94a3b8', size: 10 },
+    font: { family: "'IBM Plex Mono', monospace", color: '#374151', size: 10 },
     margin: { t: 10, b: 10, l: 10, r: 10 },
     scene: {
-      bgcolor: '#0b0f14',
-      xaxis: { title: 'Estágio',         gridcolor: '#1e2a38', zerolinecolor: '#1e2a38' },
-      yaxis: { title: 'Corte',           gridcolor: '#1e2a38', zerolinecolor: '#1e2a38' },
-      zaxis: { title: `RHS (${data.rhs_unit})`, gridcolor: '#1e2a38', zerolinecolor: '#1e2a38' },
+      bgcolor: '#fafaf8',
+      xaxis: { title: t('ax.stage'), gridcolor: '#ddd7cc', zerolinecolor: '#ccc5b9' },
+      yaxis: { title: t('ax.cut'),   gridcolor: '#ddd7cc', zerolinecolor: '#ccc5b9' },
+      zaxis: { title: `RHS (${data.rhs_unit})`, gridcolor: '#ddd7cc', zerolinecolor: '#ccc5b9' },
       camera: { eye: { x: 1.6, y: -1.6, z: 1.0 } },
     },
   }, CFG);
 }
 
-// ── 06 · 3D Surface — Valor da Água ─────────────────────────────────────
+// ── 06 · 3D Surface — Water Value ────────────────────────────────────────
 function renderSurface3dWaterValue(divId, data, hydroName) {
   hydroName = hydroName || data.hydros[0];
   const stages = data.stages;
@@ -215,58 +225,58 @@ function renderSurface3dWaterValue(divId, data, hydroName) {
   Plotly.newPlot(divId, [{
     type: 'surface', x: stages, y: cuts, z,
     colorscale: [
-      [0, '#1a0533'], [0.3, '#6366f1'], [0.7, '#ec4899'], [1, '#f97316'],
+      [0, '#fff3df'], [0.35, '#76B7B2'], [0.65, '#4E79A7'], [1, '#092746'],
     ],
     opacity: 0.92,
     contours: { z: { show: true, usecolormap: true, project: { z: true } } },
-    colorbar: { tickfont: { size: 9, color: '#64748b' } },
+    colorbar: { tickfont: { size: 9, color: '#6b7280' } },
   }], {
     paper_bgcolor: 'transparent',
-    font: { family: "'IBM Plex Mono', monospace", color: '#94a3b8', size: 10 },
+    font: { family: "'IBM Plex Mono', monospace", color: '#374151', size: 10 },
     margin: { t: 10, b: 10, l: 10, r: 10 },
     scene: {
-      bgcolor: '#0b0f14',
-      xaxis: { title: 'Estágio',    gridcolor: '#1e2a38', zerolinecolor: '#1e2a38' },
-      yaxis: { title: 'Corte',      gridcolor: '#1e2a38', zerolinecolor: '#1e2a38' },
+      bgcolor: '#fafaf8',
+      xaxis: { title: t('ax.stage'),  gridcolor: '#ddd7cc', zerolinecolor: '#ccc5b9' },
+      yaxis: { title: t('ax.cut'),    gridcolor: '#ddd7cc', zerolinecolor: '#ccc5b9' },
       zaxis: {
-        title: `${hydroName} (${data.vol_unit})`,
-        gridcolor: '#1e2a38', zerolinecolor: '#1e2a38',
+        title: `${t('ax.wv')} ${hydroName} (${data.vol_unit})`,
+        gridcolor: '#ddd7cc', zerolinecolor: '#ccc5b9',
       },
       camera: { eye: { x: 1.6, y: -1.6, z: 1.0 } },
     },
   }, CFG);
 }
 
-// ── 07 · Box Plot — RHS por Estágio ─────────────────────────────────────
+// ── 07 · Box Plot — RHS por Estágio ──────────────────────────────────────
 function renderBoxplotRhs(divId, data) {
   const traces = data.stages.map((s, idx) => {
     const vals = data.cuts.filter(d => d.stage === s).map(d => d.rhs);
     return {
       type:      'box',
       y:         vals,
-      name:      `S${s}`,
+      name:      `${t('ax.stage')} ${s}`,
       marker:    { color: PALETTE[idx % PALETTE.length], size: 5 },
       line:      { color: PALETTE[idx % PALETTE.length] },
-      fillcolor: PALETTE[idx % PALETTE.length] + '28',
+      fillcolor: PALETTE[idx % PALETTE.length] + '30',
       boxpoints: 'all',
       jitter:    0.35,
       pointpos:  -1.6,
     };
   });
   Plotly.newPlot(divId, traces, {
-    ...BASE_LAYOUT,
-    xaxis: { ...BASE_LAYOUT.xaxis, title: 'Estágio' },
-    yaxis: { ...BASE_LAYOUT.yaxis, title: `RHS (${data.rhs_unit})` },
+    ..._baseLayout(),
+    xaxis: { ..._baseLayout().xaxis, title: t('ax.stage') },
+    yaxis: { ..._baseLayout().yaxis, title: `RHS (${data.rhs_unit})` },
     showlegend: false,
   }, CFG);
 }
 
-// ── 08 · Tabela de Dados ────────────────────────────────────────────────
+// ── 08 · Tabela de Dados ─────────────────────────────────────────────────
 function renderDataTable(divId, data) {
   const hydros  = data.hydros;
   const headers = [
-    'Estágio', 'Corte', 'Iter.', 'Cluster', 'Cenário',
-    `RHS (${data.rhs_unit})`,
+    t('th.stage'), t('th.cut'), t('th.iter'), t('th.cluster'), t('th.scenario'),
+    `${t('th.rhs')} (${data.rhs_unit})`,
     ...hydros.map(h => `${h} (${data.vol_unit})`),
   ];
 
@@ -287,4 +297,21 @@ function renderDataTable(divId, data) {
         <tbody>${bodyRows}</tbody>
       </table>
     </div>`;
+}
+
+// ── Re-render all charts (called on language change) ──────────────────────
+function renderAll(data) {
+  if (!data) return;
+  const h0 = data._selectedHydro || data.hydros[0];
+  const s0 = data._selectedStage || data.stages[0];
+  const vm = data._volMax        || 1000;
+
+  renderRhsByStage(         'chart-rhs',      data);
+  renderWaterValueByStage(  'chart-wv',        data, h0);
+  renderFcfEnvelope(        'chart-envelope',  data, s0, h0, vm);
+  renderHeatmapRhs(         'chart-heatmap',   data);
+  renderSurface3dRhs(       'chart-3d-rhs',    data);
+  renderSurface3dWaterValue('chart-3d-wv',     data, h0);
+  renderBoxplotRhs(         'chart-boxplot',   data);
+  renderDataTable(          'chart-table',     data);
 }

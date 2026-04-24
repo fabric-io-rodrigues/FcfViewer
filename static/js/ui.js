@@ -1,12 +1,27 @@
 /**
- * ui.js — Upload zone, controls, stats panel, error/loading helpers
+ * ui.js — Upload, language switcher, controls, stats, helpers
  *
- * Depends on:  data.js (parseFcfFile, parseFcfUrl, setFcfData)
- *              charts.js (all render* functions)
- * Calls back into the inline script in index.html via onDataLoaded().
+ * Depends on: i18n.js  data.js  charts.js
+ * Calls back into the inline script in index.html: onDataLoaded()
  */
 
-// ── Upload zone ──────────────────────────────────────────────────────────
+// ── Language switcher ─────────────────────────────────────────────────────
+
+function setupLangSwitcher() {
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const lang = btn.dataset.lang;
+      applyLang(lang);
+      // Re-render charts if data is loaded (axis labels change)
+      const data = getFcfData();
+      if (data) renderAll(data);
+    });
+  });
+  // Apply saved/default language
+  initLang();
+}
+
+// ── Upload zone ───────────────────────────────────────────────────────────
 
 function setupDropZone() {
   const zone  = document.getElementById('drop-zone');
@@ -26,94 +41,94 @@ function setupDropZone() {
   zone.addEventListener('click', () => input.click());
   input.addEventListener('change', async e => {
     if (e.target.files[0]) await _handleFile(e.target.files[0]);
-    input.value = '';   // reset so same file can be re-selected
+    input.value = '';
   });
 }
 
 async function _handleFile(file) {
-  setLoading(`Lendo ${file.name}…`);
+  setLoading(`${t('upload.title').split(' ')[0]}… ${file.name}`);
   try {
     const data = await parseFcfFile(file);
     onDataLoaded(data);
   } catch (e) {
-    showError(`Erro ao ler arquivo: ${e.message}`);
+    showError(e.message);
   } finally {
     setLoading(null);
   }
 }
 
-// ── URL / path loader ────────────────────────────────────────────────────
+// ── URL / path loader ─────────────────────────────────────────────────────
 
 function setupUrlLoad() {
   const btn = document.getElementById('btn-load-url');
   const inp = document.getElementById('url-input');
 
-  btn.addEventListener('click',  () => _handleUrl(inp.value.trim()));
-  inp.addEventListener('keydown', e => { if (e.key === 'Enter') _handleUrl(inp.value.trim()); });
+  btn.addEventListener('click',   () => _handleUrl(inp.value.trim()));
+  inp.addEventListener('keydown', e  => { if (e.key === 'Enter') _handleUrl(inp.value.trim()); });
 }
 
 async function _handleUrl(url) {
   if (!url) return;
-  setLoading(`Carregando ${url}…`);
+  setLoading(`${url}…`);
   try {
     const data = await parseFcfUrl(url);
     onDataLoaded(data);
   } catch (e) {
-    showError(`Erro ao carregar URL: ${e.message}`);
+    showError(e.message);
   } finally {
     setLoading(null);
   }
 }
 
-// ── Controls ─────────────────────────────────────────────────────────────
+// ── Export JSON button ────────────────────────────────────────────────────
 
-let _selectedStage = null;
-let _selectedHydro = null;
-let _volMax        = 1000;
+function setupExportBtn() {
+  document.getElementById('btn-export')
+    ?.addEventListener('click', exportFcfJson);
+}
+
+// ── Controls ──────────────────────────────────────────────────────────────
 
 function setupControls(data) {
-  _selectedStage = data.stages[0];
-  _selectedHydro = data.hydros[0];
-  _volMax        = 1000;
+  data._selectedStage = data.stages[0];
+  data._selectedHydro = data.hydros[0];
+  data._volMax        = 1000;
 
   const stgSel   = document.getElementById('sel-stage');
   const hydSel   = document.getElementById('sel-hydro');
   const volInput = document.getElementById('inp-vol-max');
 
-  // populate stage selector
   stgSel.innerHTML = data.stages
-    .map(s => `<option value="${s}">Estágio ${s}</option>`)
+    .map(s => `<option value="${s}">${t('ax.stage')} ${s}</option>`)
     .join('');
-  stgSel.value = _selectedStage;
+  stgSel.value = data._selectedStage;
 
-  // populate hydro selector
   hydSel.innerHTML = data.hydros
     .map(h => `<option value="${h}">${h}</option>`)
     .join('');
-  hydSel.value = _selectedHydro;
+  hydSel.value = data._selectedHydro;
 
-  volInput.value = _volMax;
+  volInput.value = data._volMax;
 
-  // listeners
   stgSel.addEventListener('change', () => {
-    _selectedStage = parseInt(stgSel.value, 10);
-    renderFcfEnvelope('chart-envelope', data, _selectedStage, _selectedHydro, _volMax);
+    data._selectedStage = parseInt(stgSel.value, 10);
+    renderFcfEnvelope('chart-envelope', data, data._selectedStage, data._selectedHydro, data._volMax);
   });
 
   hydSel.addEventListener('change', () => {
-    _selectedHydro = hydSel.value;
-    renderWaterValueByStage('chart-wv',      data, _selectedHydro);
-    renderSurface3dWaterValue('chart-3d-wv', data, _selectedHydro);
-    renderFcfEnvelope('chart-envelope',      data, _selectedStage, _selectedHydro, _volMax);
+    data._selectedHydro = hydSel.value;
+    renderWaterValueByStage(  'chart-wv',       data, data._selectedHydro);
+    renderSurface3dWaterValue('chart-3d-wv',    data, data._selectedHydro);
+    renderFcfEnvelope(        'chart-envelope', data, data._selectedStage, data._selectedHydro, data._volMax);
   });
 
   volInput.addEventListener('change', () => {
-    _volMax = parseFloat(volInput.value) || 1000;
-    renderFcfEnvelope('chart-envelope', data, _selectedStage, _selectedHydro, _volMax);
+    data._volMax = parseFloat(volInput.value) || 1000;
+    renderFcfEnvelope('chart-envelope', data, data._selectedStage, data._selectedHydro, data._volMax);
   });
 }
 
-// ── Stats panel ──────────────────────────────────────────────────────────
+// ── Stats panel ───────────────────────────────────────────────────────────
 
 function updateStats(data) {
   const rhsVals = data.cuts.map(c => c.rhs).filter(v => v != null);
@@ -121,16 +136,40 @@ function updateStats(data) {
   const maxRhs  = Math.max(...rhsVals);
   const fmt     = v => v.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
 
-  _setText('stat-stages',   data.stages.length);
-  _setText('stat-cuts',     data.cuts.length);
-  _setText('stat-max-cut',  data.max_cut);
+  _setText('stat-stages',    data.stages.length);
+  _setText('stat-cuts',      data.cuts.length);
+  _setText('stat-max-cut',   data.max_cut);
   _setText('stat-rhs-range', `${fmt(minRhs)} – ${fmt(maxRhs)}`);
-  _setText('stat-rhs-unit', data.rhs_unit);
-  _setText('stat-hydros',   data.hydros.length);
-  _setText('stat-filename', data.filename || '—');
+  _setText('stat-rhs-unit',  data.rhs_unit);
+  _setText('stat-hydros',    data.hydros.length);
+  _setText('stat-filename',  data.filename || '—');
 }
 
-// ── UI helpers ───────────────────────────────────────────────────────────
+// ── Metadata panel (PSR binary info) ─────────────────────────────────────
+
+function updateMetaPanel(data) {
+  const meta = data.metadata;
+  const panel = document.getElementById('meta-panel');
+  if (!panel || !meta || Object.keys(meta).length === 0) return;
+
+  const items = [];
+  if (meta.anoini) {
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    items.push(`<span class="meta-item"><strong>${t('meta.period')}</strong> ${months[(meta.mesini||1)-1]}/${meta.anoini} · ${meta.nper} ${t('ax.stage').toLowerCase()}s</span>`);
+  }
+  if (meta.iter)    items.push(`<span class="meta-item"><strong>${t('meta.iter')}</strong> ${meta.iter}</span>`);
+  if (meta.zinf)    items.push(`<span class="meta-item"><strong>${t('meta.zinf')}</strong> ${meta.zinf.toFixed(2)} ${data.rhs_unit}</span>`);
+  if (meta.zsup)    items.push(`<span class="meta-item"><strong>${t('meta.zsup')}</strong> ${meta.zsup.toFixed(2)} ${data.rhs_unit}</span>`);
+  if (meta.itbst)   items.push(`<span class="meta-item"><strong>${t('meta.itbst')}</strong> ${meta.itbst}</span>`);
+  if (meta.zsupbst) items.push(`<span class="meta-item"><strong>${t('meta.zsupbst')}</strong> ${meta.zsupbst.toFixed(2)} ${data.rhs_unit}</span>`);
+
+  if (items.length) {
+    panel.innerHTML = items.join('');
+    panel.classList.add('visible');
+  }
+}
+
+// ── UI helpers ────────────────────────────────────────────────────────────
 
 function showSection(id) {
   document.getElementById(id).style.display = '';
@@ -139,20 +178,16 @@ function showSection(id) {
 function setLoading(msg) {
   const el  = document.getElementById('loading');
   const txt = document.getElementById('loading-msg');
-  if (msg) {
-    txt.textContent  = msg;
-    el.style.display = 'flex';
-  } else {
-    el.style.display = 'none';
-  }
+  if (msg) { txt.textContent = msg; el.style.display = 'flex'; }
+  else      { el.style.display = 'none'; }
 }
 
 function showError(msg) {
   const el = document.getElementById('error-banner');
-  el.textContent  = msg;
+  el.textContent = msg;
   el.style.display = '';
-  clearTimeout(el._timer);
-  el._timer = setTimeout(() => { el.style.display = 'none'; }, 9000);
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.style.display = 'none'; }, 10000);
 }
 
 function _setText(id, val) {
