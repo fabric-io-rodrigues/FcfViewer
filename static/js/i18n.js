@@ -332,9 +332,8 @@ function applyLang(lang) {
     if (v !== undefined) el.placeholder = v;
   });
 
-  document.querySelectorAll('.lang-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.lang === lang);
-  });
+  const sel = document.getElementById('app-lang-select');
+  if (sel) sel.value = lang;
 }
 
 function initLang() { applyLang(_lang); }

@@ -8,16 +8,13 @@
 /* ── Language switcher ───────────────────────────────────────────────────── */
 
 function setupLangSwitcher() {
-  document.querySelectorAll('.lang-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const lang = btn.dataset.lang;
-      applyLang(lang);
-      // Re-render if data is loaded (axis labels change with language)
-      const d = getFcfData();
-      if (d) renderAll(d);
-    });
-  });
   initLang();
+}
+
+function onAppLangChange(lang) {
+  applyLang(lang);
+  const d = getFcfData();
+  if (d) renderAll(d);
 }
 
 /* ── Tab navigation ──────────────────────────────────────────────────────── */
