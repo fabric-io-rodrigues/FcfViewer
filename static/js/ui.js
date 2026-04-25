@@ -30,7 +30,6 @@ function setupChartInfo() {
   });
 }
 
-=======
 /* ── Tab navigation ──────────────────────────────────────────────────────── */
 
 function setupTabs() {
