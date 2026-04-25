@@ -188,10 +188,14 @@
           <!-- Envelope (full width) -->
           <div class="chart-card wide">
             <div class="chart-card-header">
-              <div class="chart-card-title" data-i18n="c.envelope.t">Função de Custo Futuro — Envelope</div>
-              <div class="chart-card-desc" data-i18n="c.envelope.d">
-                FCF(V) = max { c(k) + wv(k)·V } — cada linha tracejada é um corte; a curva sólida é o envelope convexo.
+              <div class="chart-card-title-row">
+                <div class="chart-card-title" data-i18n="c.envelope.t">Função de Custo Futuro — Envelope</div>
+                <button class="chart-info-btn" data-info-target="info-envelope" title="Info">
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                </button>
               </div>
+              <div class="chart-card-desc" data-i18n="c.envelope.d">FCF(V) = max { c(k) + wv(k)·V } — cada linha tracejada é um corte; a curva sólida é o envelope convexo.</div>
+              <div class="chart-info-box" id="info-envelope" data-i18n-html="c.envelope.info"></div>
             </div>
             <div id="chart-envelope" class="plot-area-lg"></div>
           </div>
@@ -199,10 +203,14 @@
           <!-- RHS by Stage -->
           <div class="chart-card">
             <div class="chart-card-header">
-              <div class="chart-card-title" data-i18n="c.rhs.t">Interceptos dos Cortes por Estágio</div>
-              <div class="chart-card-desc" data-i18n="c.rhs.d">
-                Valor do intercepto c(k) de cada corte em função do estágio.
+              <div class="chart-card-title-row">
+                <div class="chart-card-title" data-i18n="c.rhs.t">Interceptos dos Cortes por Estágio</div>
+                <button class="chart-info-btn" data-info-target="info-rhs" title="Info">
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                </button>
               </div>
+              <div class="chart-card-desc" data-i18n="c.rhs.d">Valor do intercepto c(k) de cada corte em função do estágio.</div>
+              <div class="chart-info-box" id="info-rhs" data-i18n-html="c.rhs.info"></div>
             </div>
             <div id="chart-rhs" class="plot-area"></div>
           </div>
@@ -210,10 +218,14 @@
           <!-- Water Value by Stage -->
           <div class="chart-card">
             <div class="chart-card-header">
-              <div class="chart-card-title" data-i18n="c.wv.t">Valor da Água por Estágio</div>
-              <div class="chart-card-desc" data-i18n="c.wv.d">
-                Coeficiente wv(k) — variação do custo futuro por hm³ adicional armazenado.
+              <div class="chart-card-title-row">
+                <div class="chart-card-title" data-i18n="c.wv.t">Valor da Água por Estágio</div>
+                <button class="chart-info-btn" data-info-target="info-wv" title="Info">
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                </button>
               </div>
+              <div class="chart-card-desc" data-i18n="c.wv.d">Coeficiente wv(k) — variação do custo futuro por hm³ adicional armazenado.</div>
+              <div class="chart-info-box" id="info-wv" data-i18n-html="c.wv.info"></div>
             </div>
             <div id="chart-wv" class="plot-area"></div>
           </div>
@@ -228,10 +240,14 @@
           <!-- Box Plot -->
           <div class="chart-card">
             <div class="chart-card-header">
-              <div class="chart-card-title" data-i18n="c.box.t">Distribuição dos Interceptos por Estágio</div>
-              <div class="chart-card-desc" data-i18n="c.box.d">
-                Dispersão dos interceptos c(k) por estágio — mediana, quartis e pontos individuais.
+              <div class="chart-card-title-row">
+                <div class="chart-card-title" data-i18n="c.box.t">Distribuição dos Interceptos por Estágio</div>
+                <button class="chart-info-btn" data-info-target="info-box" title="Info">
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                </button>
               </div>
+              <div class="chart-card-desc" data-i18n="c.box.d">Dispersão dos interceptos c(k) por estágio — mediana, quartis e pontos individuais.</div>
+              <div class="chart-info-box" id="info-box" data-i18n-html="c.box.info"></div>
             </div>
             <div id="chart-box" class="plot-area"></div>
           </div>
@@ -239,10 +255,14 @@
           <!-- Heatmap -->
           <div class="chart-card">
             <div class="chart-card-header">
-              <div class="chart-card-title" data-i18n="c.heatmap.t">Mapa de Calor — Interceptos</div>
-              <div class="chart-card-desc" data-i18n="c.heatmap.d">
-                Visão global dos interceptos. Tons mais escuros indicam maior custo futuro.
+              <div class="chart-card-title-row">
+                <div class="chart-card-title" data-i18n="c.heatmap.t">Mapa de Calor — Interceptos</div>
+                <button class="chart-info-btn" data-info-target="info-heatmap" title="Info">
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                </button>
               </div>
+              <div class="chart-card-desc" data-i18n="c.heatmap.d">Visão global dos interceptos. Tons mais escuros indicam maior custo futuro.</div>
+              <div class="chart-info-box" id="info-heatmap" data-i18n-html="c.heatmap.info"></div>
             </div>
             <div id="chart-heatmap" class="plot-area"></div>
           </div>
@@ -250,10 +270,14 @@
           <!-- Cuts per iteration (full width) -->
           <div class="chart-card wide">
             <div class="chart-card-header">
-              <div class="chart-card-title" data-i18n="c.cuts_iter.t">Cortes por Iteração</div>
-              <div class="chart-card-desc" data-i18n="c.cuts_iter.d">
-                Número de cortes gerados em cada iteração do SDDP — reflete a evolução da FCF ao longo do processo de convergência.
+              <div class="chart-card-title-row">
+                <div class="chart-card-title" data-i18n="c.cuts_iter.t">Cortes por Iteração</div>
+                <button class="chart-info-btn" data-info-target="info-cuts-iter" title="Info">
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                </button>
               </div>
+              <div class="chart-card-desc" data-i18n="c.cuts_iter.d">Número de cortes gerados em cada iteração do SDDP — reflete a evolução da FCF ao longo do processo de convergência.</div>
+              <div class="chart-info-box" id="info-cuts-iter" data-i18n-html="c.cuts_iter.info"></div>
             </div>
             <div id="chart-cuts-iter" class="plot-area"></div>
           </div>
@@ -267,20 +291,28 @@
 
           <div class="chart-card">
             <div class="chart-card-header">
-              <div class="chart-card-title" data-i18n="c.3drhs.t">Superfície 3D — Interceptos da FCF</div>
-              <div class="chart-card-desc" data-i18n="c.3drhs.d">
-                Superfície do intercepto c(k) ao longo dos estágios e cortes. Arraste para rotacionar.
+              <div class="chart-card-title-row">
+                <div class="chart-card-title" data-i18n="c.3drhs.t">Superfície 3D — Interceptos da FCF</div>
+                <button class="chart-info-btn" data-info-target="info-3drhs" title="Info">
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                </button>
               </div>
+              <div class="chart-card-desc" data-i18n="c.3drhs.d">Superfície do intercepto c(k) ao longo dos estágios e cortes. Arraste para rotacionar.</div>
+              <div class="chart-info-box" id="info-3drhs" data-i18n-html="c.3drhs.info"></div>
             </div>
             <div id="chart-3d-rhs" class="plot-area-3d"></div>
           </div>
 
           <div class="chart-card">
             <div class="chart-card-header">
-              <div class="chart-card-title" data-i18n="c.3dwv.t">Superfície 3D — Valor da Água</div>
-              <div class="chart-card-desc" data-i18n="c.3dwv.d">
-                Superfície do coeficiente wv(k) para o reservatório selecionado.
+              <div class="chart-card-title-row">
+                <div class="chart-card-title" data-i18n="c.3dwv.t">Superfície 3D — Valor da Água</div>
+                <button class="chart-info-btn" data-info-target="info-3dwv" title="Info">
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                </button>
               </div>
+              <div class="chart-card-desc" data-i18n="c.3dwv.d">Superfície do coeficiente wv(k) para o reservatório selecionado.</div>
+              <div class="chart-info-box" id="info-3dwv" data-i18n-html="c.3dwv.info"></div>
             </div>
             <div id="chart-3d-wv" class="plot-area-3d"></div>
           </div>
@@ -292,10 +324,14 @@
       <div id="tab-data" class="tab-panel">
         <div class="chart-card full">
           <div class="chart-card-header">
-            <div class="chart-card-title" data-i18n="c.table.t">Tabela de Cortes FCF</div>
-            <div class="chart-card-desc" data-i18n="c.table.d">
-              Todos os cortes com intercepto, valor da água e metadados de iteração.
+            <div class="chart-card-title-row">
+              <div class="chart-card-title" data-i18n="c.table.t">Tabela de Cortes FCF</div>
+              <button class="chart-info-btn" data-info-target="info-table" title="Info">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+              </button>
             </div>
+            <div class="chart-card-desc" data-i18n="c.table.d">Todos os cortes com intercepto, valor da água e metadados de iteração.</div>
+            <div class="chart-info-box" id="info-table" data-i18n-html="c.table.info"></div>
           </div>
           <div id="chart-table" class="table-outer"></div>
         </div>
@@ -338,6 +374,7 @@ function onDataLoaded(data) {
 /* ── Boot ───────────────────────────────────────────────────────────────── */
 (async () => {
   setupLangSwitcher();
+  setupChartInfo();
   setupTabs();
   setupDropZone();
   setupUrlLoad();

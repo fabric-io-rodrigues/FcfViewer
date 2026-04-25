@@ -581,6 +581,14 @@ body {
   margin-bottom: 14px;
 }
 
+.chart-card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+
 .chart-card-title {
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
@@ -588,8 +596,51 @@ body {
   letter-spacing: .16em;
   text-transform: uppercase;
   color: var(--primary-mid);
-  margin-bottom: 3px;
 }
+
+.chart-info-btn {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--muted);
+  padding: 0;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.chart-info-btn:hover,
+.chart-info-btn.active {
+  background: var(--primary-light);
+  border-color: var(--primary);
+  color: var(--primary-dark);
+}
+
+.chart-info-box {
+  display: none;
+  background: var(--gold-100);
+  border-left: 3px solid var(--primary);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 10px 14px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-sec);
+  line-height: 1.65;
+}
+.chart-info-box.visible { display: block; }
+.chart-info-box code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  background: rgba(171,150,113,.15);
+  padding: 1px 4px;
+  border-radius: 3px;
+  color: var(--primary-dark);
+}
+.chart-info-box em { font-style: italic; color: var(--primary-dark); }
 
 .chart-card-desc {
   font-size: 12px;
