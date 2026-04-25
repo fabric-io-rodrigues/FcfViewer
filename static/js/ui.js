@@ -17,6 +17,20 @@ function onAppLangChange(lang) {
   if (d) renderAll(d);
 }
 
+/* ── Chart info panels ───────────────────────────────────────────────────── */
+
+function setupChartInfo() {
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('.chart-info-btn');
+    if (!btn) return;
+    const box = document.getElementById(btn.dataset.infoTarget);
+    if (!box) return;
+    const open = box.classList.toggle('visible');
+    btn.classList.toggle('active', open);
+  });
+}
+
+=======
 /* ── Tab navigation ──────────────────────────────────────────────────────── */
 
 function setupTabs() {
