@@ -402,7 +402,7 @@ function renderDataTable(divId, data) {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
-   09 · Cuts per iteration — bar chart
+   09 · Cuts per iteration — step line
    ───────────────────────────────────────────────────────────────────────── */
 function renderCutsPerIter(divId, data) {
   const iterMap = {};
@@ -411,15 +411,19 @@ function renderCutsPerIter(divId, data) {
 
   const bl = _bl();
   Plotly.newPlot(divId, [{
-    type: 'bar',
+    type: 'scatter',
+    mode: 'lines+markers',
     x: iters,
     y: iters.map(i => iterMap[i]),
-    marker: { color: iters.map((_, k) => PALETTE[k % PALETTE.length]) },
+    line:      { shape: 'hv', width: 2.5, color: PALETTE[0] },
+    marker:    { size: 7, color: PALETTE[0] },
+    fill:      'tozeroy',
+    fillcolor: PALETTE[0] + '1a',
     hovertemplate:
       `${t('ax.iter')} %{x}<br>${t('lbl.cuts_count')} = %{y}<extra></extra>`,
   }], {
     ...bl,
-    xaxis: { ...bl.xaxis, title: t('ax.iter'), dtick: 1, type: 'category' },
+    xaxis: { ...bl.xaxis, title: t('ax.iter'), dtick: 1, type: 'linear' },
     yaxis: { ...bl.yaxis, title: t('lbl.cuts_count') },
     showlegend: false,
   }, CFG);
