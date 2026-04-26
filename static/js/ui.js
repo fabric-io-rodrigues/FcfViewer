@@ -57,12 +57,12 @@ function activateFirstTab() {
 /* ── Sample loaders ──────────────────────────────────────────────────────── */
 
 function setupSamples() {
-  document.querySelectorAll('.sample-btn').forEach(btn => {
+  document.querySelectorAll('.sample-card').forEach(btn => {
     btn.addEventListener('click', async () => {
       const url = btn.dataset.url;
       if (!url) return;
       btn.classList.add('loading');
-      setLoading(btn.querySelector('.sample-btn-name').textContent + '…');
+      setLoading(btn.querySelector('.sample-card-name').textContent + '…');
       try {
         const d = await parseFcfUrl(url);
         onDataLoaded(d);

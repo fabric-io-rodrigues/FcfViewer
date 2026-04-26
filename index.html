@@ -64,54 +64,53 @@
   <!-- ══ LANDING VIEW (upload + samples) ════════════════════════════════════ -->
   <div id="view-landing" class="view-landing">
 
-    <div class="landing-hero">
-
-      <!-- Drop zone -->
-      <div id="drop-zone" class="drop-zone">
-        <input type="file" id="file-input" accept=".psr,.csv,.xls,.json" style="display:none">
-        <div class="drop-zone-icon">↑</div>
-        <div class="drop-zone-text" data-i18n="up.drop">Arraste o arquivo aqui ou clique para selecionar</div>
-        <div class="drop-zone-hint" data-i18n="up.hint">costmexx.psr · costmexx.xls · costmexx.csv</div>
-      </div>
-
-      <!-- Sample cases panel -->
-      <div class="samples-panel">
-        <span class="samples-label" data-i18n="up.samples">Casos de exemplo</span>
-
-        <button class="sample-btn" data-url="sample/caso_exemplo_costmexx.psr">
-          <span class="sample-btn-dot"></span>
-          <span class="sample-btn-name" data-i18n="s.exemplo">Exemplo Didático</span>
-          <span class="sample-btn-meta">4 KB · 1 res · 11 est</span>
-        </button>
-
-        <button class="sample-btn" data-url="sample/caso_Island_costsexx.psr">
-          <span class="sample-btn-dot"></span>
-          <span class="sample-btn-name" data-i18n="s.island">Sistema Ilha</span>
-          <span class="sample-btn-meta">799 KB · 13 res · 103 est</span>
-        </button>
-
-        <button class="sample-btn" data-url="sample/caso_bolivia_costmebo.psr">
-          <span class="sample-btn-dot"></span>
-          <span class="sample-btn-name" data-i18n="s.bolivia">Bolívia</span>
-          <span class="sample-btn-meta">3.9 MB · 40 res · 59 est</span>
-        </button>
-
-        <button class="sample-btn" data-url="sample/caso_brasil_costmexx.psr">
-          <span class="sample-btn-dot"></span>
-          <span class="sample-btn-name" data-i18n="s.brasil">Brasil</span>
-          <span class="sample-btn-meta">13.8 MB · 101 res · 119 est</span>
-        </button>
-      </div>
+    <!-- App title -->
+    <div class="upload-hero">
+      <div class="upload-app-name" data-i18n="hdr.title">FCF Viewer</div>
+      <div class="upload-app-sub" data-i18n="hdr.subtitle">Função de Custo Futuro · SDDP</div>
     </div>
 
-    <!-- URL row -->
-    <div class="url-row">
-      <span class="url-label" data-i18n="up.url_lbl">ou endereço:</span>
+    <!-- Upload box -->
+    <div id="drop-zone" class="upload-box">
+      <input type="file" id="file-input" accept=".psr,.csv,.xls,.json" style="display:none">
+      <svg class="upload-icon" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/>
+      </svg>
+      <div class="upload-box-title" data-i18n="up.title">Carregar arquivo FCF</div>
+      <div class="upload-box-desc" data-i18n="up.drop">Arraste o arquivo aqui ou clique para selecionar</div>
+      <button class="upload-select-btn" data-i18n="up.select_btn">Selecionar arquivo</button>
+      <div class="upload-box-hint" data-i18n="up.hint">costmexx.psr · costmexx.xls · costmexx.csv</div>
+    </div>
+
+    <!-- URL section -->
+    <div class="upload-divider"><span data-i18n="up.url_or">ou via URL</span></div>
+    <div class="url-input-row">
       <input type="text" id="url-input" class="url-input"
         data-i18n-ph="up.url_ph"
-        placeholder="http://localhost/data/costmexx.psr"
+        placeholder="https://example.com/costmexx.psr"
         autocomplete="off" spellcheck="false">
-      <button id="btn-load-url" class="btn-primary" data-i18n="up.btn">Carregar</button>
+      <button id="btn-load-url" class="url-load-btn" data-i18n="up.btn">Carregar</button>
+    </div>
+
+    <!-- Sample cases -->
+    <div class="upload-divider"><span data-i18n="up.samples_or">ou carregar um exemplo</span></div>
+    <div class="sample-list">
+      <button class="sample-card" data-url="sample/caso_exemplo_costmexx.psr">
+        <div class="sample-card-name" data-i18n="s.exemplo">Exemplo Didático</div>
+        <div class="sample-card-meta">4 KB · 1 res · 11 est</div>
+      </button>
+      <button class="sample-card" data-url="sample/caso_Island_costsexx.psr">
+        <div class="sample-card-name" data-i18n="s.island">Sistema Ilha</div>
+        <div class="sample-card-meta">799 KB · 13 res · 103 est</div>
+      </button>
+      <button class="sample-card" data-url="sample/caso_bolivia_costmebo.psr">
+        <div class="sample-card-name" data-i18n="s.bolivia">Bolívia</div>
+        <div class="sample-card-meta">3,9 MB · 40 res · 59 est</div>
+      </button>
+      <button class="sample-card" data-url="sample/caso_brasil_costmexx.psr">
+        <div class="sample-card-name" data-i18n="s.brasil">Brasil</div>
+        <div class="sample-card-meta">13,8 MB · 101 res · 119 est</div>
+      </button>
     </div>
 
   </div><!-- #view-landing -->
